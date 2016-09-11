@@ -2,7 +2,30 @@
 Java parser for DTASelect output files.
   
 Download the latest version from [here](https://github.com/proteomicsyates/DTASelectParser/releases/latest)  
+
+Alternatively, you can get it from our **maven repository**:  
   
+**Dependency:**  
+```
+<dependency>  
+  <groupId>edu.scripps.yates</groupId>  
+  <artifactId>dtaselectparser</artifactId>  
+  <version>1.1</version>  
+</dependency>  
+```  
+  
+**Maven repositories:**  
+ ```
+<repository>  
+  <id>internal</id>  
+  <url>http://sealion.scripps.edu/archiva/repository/internal/</url>  
+</repository>  
+<snapshotRepository>  
+  <id>snapshots</id>  
+  <url>http://sealion.scripps.edu/archiva/repository/snapshots/</url>  
+</snapshotRepository>  
+```
+
 Usage example:  
 ```
 // dtaSelect File object
