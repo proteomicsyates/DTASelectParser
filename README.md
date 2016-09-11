@@ -26,7 +26,7 @@ Alternatively, you can get it from our **maven repository**:
 </snapshotRepository>  
 ```
 
-Usage example:  
+**Usage example:**  
 ```
 // dtaSelect File object
 File dtaSelectFile = ...
