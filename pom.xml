@@ -159,6 +159,6 @@
   <organization>
   	<name>TSRI</name>
   </organization>
-  <version>1.1</version>
+  <version>1.1.1-SNAPSHOT</version>
   <groupId>edu.scripps.yates</groupId>
 </project>
