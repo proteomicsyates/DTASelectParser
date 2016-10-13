@@ -29,7 +29,7 @@ public class DTASelectPSM {
 	private static final String RT = "RT";
 	private static final String ION_PROPORTION = "IonProportion";
 	private static final String REDUNDANCY = "Redundancy";
-	private static final String SEQUENCE = "Sequence";
+	public static final String SEQUENCE = "Sequence";
 	private final String rawPSMIdentifier;
 	private final Double xcorr;
 	private final Double deltacn;

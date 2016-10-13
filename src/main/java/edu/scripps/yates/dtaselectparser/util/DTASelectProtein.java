@@ -127,6 +127,10 @@ public class DTASelectProtein {
 		return id;
 	}
 
+	public void setLocus(String locus) {
+		id = locus;
+	}
+
 	/**
 	 * @return the pi
 	 */
