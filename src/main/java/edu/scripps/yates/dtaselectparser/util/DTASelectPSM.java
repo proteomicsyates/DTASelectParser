@@ -119,8 +119,7 @@ public class DTASelectPSM {
 	 */
 	public String getPsmIdentifier() {
 		if (psmIdentifier == null) {
-			psmIdentifier = new StringBuilder(fileName).append("-").append(scan).append("-").append(chargeState)
-					.toString();
+			psmIdentifier = KeyUtils.getSpectrumKey(this, true);
 		}
 		return psmIdentifier;
 	}
