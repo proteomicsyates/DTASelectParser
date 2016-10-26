@@ -16,8 +16,8 @@ public class KeyUtils {
 	public static String getSpectrumKey(DTASelectPSM psm, boolean chargeSensible) {
 
 		StringBuilder sb = new StringBuilder();
-		if (psm.getSpectraFileName() != null) {
-			sb.append(psm.getSpectraFileName());
+		if (psm.getRawFileName() != null) {
+			sb.append(psm.getRawFileName());
 		}
 		if (!"".equals(sb.toString())) {
 			sb.append("-");

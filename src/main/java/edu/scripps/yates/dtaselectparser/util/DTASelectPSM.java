@@ -51,7 +51,7 @@ public class DTASelectPSM {
 	private final String runID;
 	private final String runPath;
 	private String searchEngine;
-	private final String fileName;
+	private final String rawFileName;
 	private final Integer chargeState;
 	private String psmIdentifier;
 	private String msRunId;
@@ -65,9 +65,9 @@ public class DTASelectPSM {
 		String[] elements = dtaSelectRow.split("\t");
 		rawPSMIdentifier = elements[positions.get(PSM_ID)];
 		scan = FastaParser.getScanFromPSMIdentifier(rawPSMIdentifier);
-		fileName = FastaParser.getFileNameFromPSMIdentifier(rawPSMIdentifier);
+		rawFileName = FastaParser.getFileNameFromPSMIdentifier(rawPSMIdentifier);
 		chargeState = FastaParser.getChargeStateFromPSMIdentifier(rawPSMIdentifier);
-		runID = fileName;
+		runID = rawFileName;
 		// store by scan number in the map
 		map.put(scan, this);
 
@@ -109,8 +109,8 @@ public class DTASelectPSM {
 		}
 	}
 
-	public String getSpectraFileName() {
-		return fileName;
+	public String getRawFileName() {
+		return rawFileName;
 
 	}
 
@@ -292,7 +292,7 @@ public class DTASelectPSM {
 
 	public String getMsRunId() {
 		if (msRunId == null) {
-			return getSpectraFileName();
+			return getRawFileName();
 		}
 		return msRunId;
 	}
