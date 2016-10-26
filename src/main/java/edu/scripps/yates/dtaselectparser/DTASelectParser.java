@@ -270,13 +270,13 @@ public class DTASelectParser {
 							if (!searchEngines.isEmpty()) {
 								psm.setSearchEngine(searchEngines.iterator().next());
 							}
-							if (!spectraFileNames.contains(psm.getSpectraFileName())) {
-								spectraFileNames.add(psm.getSpectraFileName());
-								log.debug(psm.getSpectraFileName() + " added to a set of " + spectraFileNames.size()
+							if (!spectraFileNames.contains(psm.getRawFileName())) {
+								spectraFileNames.add(psm.getRawFileName());
+								log.debug(psm.getRawFileName() + " added to a set of " + spectraFileNames.size()
 										+ " spectra file names in total");
 							}
 							String spectraFileFullPath = new File(runId).getParent() + File.separator
-									+ psm.getSpectraFileName() + ".ms2";
+									+ psm.getRawFileName() + ".ms2";
 							if (!spectraFileFullPaths.contains(spectraFileFullPath)) {
 								spectraFileFullPaths.add(spectraFileFullPath);
 								log.debug(spectraFileFullPath + " added to a set of " + spectraFileFullPaths.size()
@@ -751,7 +751,7 @@ public class DTASelectParser {
 		this.uniprotVersion = uniprotVersion;
 	}
 
-	public Set<String> getInputFileNames() {
+	public Set<String> getInputFilePathes() {
 		return fs.keySet();
 	}
 }
