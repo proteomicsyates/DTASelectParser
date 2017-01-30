@@ -13,7 +13,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -72,15 +71,16 @@ public class DTASelectParser {
 		this(u.getFile(), u.openStream());
 	}
 
-	public DTASelectParser(RemoteSSHFileReference s) throws FileNotFoundException {
-		this(s.getRemoteFile().getAbsolutePath(), new FileInputStream(s.getRemoteFile()));
+	public DTASelectParser(String runid, RemoteSSHFileReference s) throws FileNotFoundException {
+		this(runid, s.getRemoteInputStream().getInputStream());
 	}
 
-	public DTASelectParser(Collection<RemoteSSHFileReference> s) throws FileNotFoundException {
+	public DTASelectParser(Map<String, RemoteSSHFileReference> s) throws FileNotFoundException {
 		fs = new HashMap<String, InputStream>();
-		for (RemoteSSHFileReference server : s) {
-			final File remoteFile = server.getRemoteFile();
-			fs.put(server.getRemoteFile().getAbsolutePath(), new FileInputStream(remoteFile));
+		for (String key : s.keySet()) {
+			RemoteSSHFileReference server = s.get(key);
+			// final File remoteFile = server.getRemoteFile();
+			fs.put(key, server.getRemoteInputStream().getInputStream());
 		}
 
 	}
@@ -357,6 +357,8 @@ public class DTASelectParser {
 					if (f != null) {
 						log.info("Closing input stream");
 						f.close();
+						log.info("Input stream closed");
+
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
