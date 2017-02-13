@@ -72,7 +72,7 @@ public class DTASelectParser {
 	}
 
 	public DTASelectParser(String runid, RemoteSSHFileReference s) throws FileNotFoundException {
-		this(runid, s.getRemoteInputStream().getInputStream());
+		this(runid, s.getRemoteInputStream());
 	}
 
 	public DTASelectParser(Map<String, RemoteSSHFileReference> s) throws FileNotFoundException {
@@ -80,7 +80,7 @@ public class DTASelectParser {
 		for (String key : s.keySet()) {
 			RemoteSSHFileReference server = s.get(key);
 			// final File remoteFile = server.getRemoteFile();
-			fs.put(key, server.getRemoteInputStream().getInputStream());
+			fs.put(key, server.getRemoteInputStream());
 		}
 
 	}
