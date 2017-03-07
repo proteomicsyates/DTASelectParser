@@ -24,7 +24,7 @@ import java.util.regex.PatternSyntaxException;
 
 import org.apache.log4j.Logger;
 
-import edu.scripps.yates.annotations.uniprot.UniprotRetriever;
+import edu.scripps.yates.annotations.uniprot.UniprotProteinLocalRetriever;
 import edu.scripps.yates.annotations.uniprot.xml.Entry;
 import edu.scripps.yates.dbindex.DBIndexInterface;
 import edu.scripps.yates.dbindex.IndexedProtein;
@@ -63,7 +63,7 @@ public class DTASelectParser {
 	private final Set<String> spectraFileNames = new HashSet<String>();
 	private String dtaSelectVersion;
 	private final Set<String> spectraFileFullPaths = new HashSet<String>();
-	private UniprotRetriever uplr;
+	private UniprotProteinLocalRetriever uplr;
 	private String uniprotVersion;
 	private boolean ignoreNotFoundPeptidesInDB;
 
@@ -748,7 +748,7 @@ public class DTASelectParser {
 		this.ignoreNotFoundPeptidesInDB = ignoreNotFoundPeptidesInDB;
 	}
 
-	public void enableProteinMergingBySecondaryAccessions(UniprotRetriever uplr, String uniprotVersion) {
+	public void enableProteinMergingBySecondaryAccessions(UniprotProteinLocalRetriever uplr, String uniprotVersion) {
 		this.uplr = uplr;
 		this.uniprotVersion = uniprotVersion;
 	}
