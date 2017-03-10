@@ -756,4 +756,8 @@ public class DTASelectParser {
 	public Set<String> getInputFilePathes() {
 		return fs.keySet();
 	}
+
+	public DBIndexInterface getDBIndex() {
+		return dbIndex;
+	}
 }
