@@ -760,4 +760,20 @@ public class DTASelectParser {
 	public DBIndexInterface getDBIndex() {
 		return dbIndex;
 	}
+
+	public Set<String> getUniprotAccSet() {
+		Set<String> ret = new HashSet<String>();
+		try {
+			Set<String> keySet = getDTASelectProteins().keySet();
+			for (String acc : keySet) {
+				if (FastaParser.getUniProtACC(acc) != null) {
+					ret.add(acc);
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return ret;
+	}
 }
