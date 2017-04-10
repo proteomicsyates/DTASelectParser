@@ -766,8 +766,9 @@ public class DTASelectParser {
 		try {
 			Set<String> keySet = getDTASelectProteins().keySet();
 			for (String acc : keySet) {
-				if (FastaParser.getUniProtACC(acc) != null) {
-					ret.add(acc);
+				String uniProtACC = FastaParser.getUniProtACC(acc);
+				if (uniProtACC != null) {
+					ret.add(uniProtACC);
 				}
 			}
 		} catch (IOException e) {
