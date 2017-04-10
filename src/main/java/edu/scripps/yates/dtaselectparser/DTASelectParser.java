@@ -36,6 +36,8 @@ import edu.scripps.yates.utilities.fasta.FastaParser;
 import edu.scripps.yates.utilities.ipi.IPI2UniprotACCMap;
 import edu.scripps.yates.utilities.model.enums.AccessionType;
 import edu.scripps.yates.utilities.model.factories.AccessionEx;
+import edu.scripps.yates.utilities.progresscounter.ProgressCounter;
+import edu.scripps.yates.utilities.progresscounter.ProgressPrintingType;
 import edu.scripps.yates.utilities.proteomicsmodel.Accession;
 import edu.scripps.yates.utilities.remote.RemoteSSHFileReference;
 import edu.scripps.yates.utilities.util.Pair;
@@ -568,7 +570,8 @@ public class DTASelectParser {
 		}
 		Set<String> accessions = new HashSet<String>();
 		Map<String, String> accToLocus = new HashMap<String, String>();
-		for (DTASelectProtein protein : getDTASelectProteins().values()) {
+		HashMap<String, DTASelectProtein> dtaSelectProteins = getDTASelectProteins();
+		for (DTASelectProtein protein : dtaSelectProteins.values()) {
 			final String accession = FastaParser.getACC(protein.getLocus()).getFirstelement();
 			accessions.add(accession);
 			accToLocus.put(accession, protein.getLocus());
@@ -593,21 +596,27 @@ public class DTASelectParser {
 		int numObsoletes = 0;
 		log.info("Merging proteins that have secondary accessions according to Uniprot " + latestVersion + "...");
 
-		int initialSize = getDTASelectProteins().size();
+		int initialSize = accessions.size();
+		ProgressCounter counter = new ProgressCounter(initialSize, ProgressPrintingType.PERCENTAGE_STEPS, 0);
 		for (Set<String> accessionSet : listOfSets) {
 			Map<String, Entry> annotatedProteins = uplr.getAnnotatedProteins(uniprotVersion, accessionSet);
 			for (String accession : accessionSet) {
-				DTASelectProtein protein = getDTASelectProteins().get(accToLocus.get(accession));
+				counter.increment();
+				String progress = counter.printIfNecessary();
+				if (!"".contentEquals(progress)) {
+					log.info(progress);
+				}
+				DTASelectProtein protein = dtaSelectProteins.get(accToLocus.get(accession));
 				Entry entry = annotatedProteins.get(accession);
 				if (entry != null && entry.getAccession() != null && !entry.getAccession().isEmpty()) {
 					String primaryAccession = entry.getAccession().get(0);
 					if (!accession.equals(primaryAccession) && !accession.contains(primaryAccession)) {
 						log.info("Replacing Uniprot accession " + accession + " by " + primaryAccession);
 						protein.setLocus(primaryAccession);
-						if (getDTASelectProteins().containsKey(primaryAccession)) {
+						if (dtaSelectProteins.containsKey(primaryAccession)) {
 							// there was already a protein with that
 							// primaryAccession
-							DTASelectProtein quantifiedProtein2 = getDTASelectProteins().get(primaryAccession);
+							DTASelectProtein quantifiedProtein2 = dtaSelectProteins.get(primaryAccession);
 							// merge quantifiedPRotein and quantifiedPRotein2
 							mergeProteins(protein, quantifiedProtein2);
 
@@ -615,8 +624,8 @@ public class DTASelectParser {
 							numObsoletes++;
 						}
 						// remove old/secondary accession
-						getDTASelectProteins().remove(accession);
-						getDTASelectProteins().put(primaryAccession, protein);
+						dtaSelectProteins.remove(accession);
+						dtaSelectProteins.put(primaryAccession, protein);
 
 					}
 				} else {
@@ -626,7 +635,7 @@ public class DTASelectParser {
 				}
 			}
 		}
-		int finalSize = getDTASelectProteins().size();
+		int finalSize = dtaSelectProteins.size();
 		if (initialSize != finalSize) {
 			log.info(finalSize - initialSize
 					+ " proteins with secondary accessions were merged with the corresponding protein with primary accession");
