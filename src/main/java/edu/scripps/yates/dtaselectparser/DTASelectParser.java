@@ -127,8 +127,12 @@ public class DTASelectParser {
 				boolean intro = false;
 				boolean conclusion = false;
 				boolean isPsm = false;
+				boolean locusStarted = false;
 				while ((line = dis.readLine()) != null) {
 					numLine++;
+					if ("".equals(line.trim())) {
+						continue;
+					}
 					// if (numLine % 10 == 0) {
 					// log.info(numLine + " lines readed");
 					// }
@@ -146,25 +150,23 @@ public class DTASelectParser {
 						searchEngineLine = numLine;
 						searchEngines.add(SEQUEST);
 						setSearchEngineVersion(line.split(" ")[1]);
-					}
-					if (line.toLowerCase().startsWith(PROLUCID.toLowerCase())) {
+					} else if (line.toLowerCase().startsWith(PROLUCID.toLowerCase())) {
 						searchEngineLine = numLine;
 						searchEngines.add(PROLUCID);
 						setSearchEngineVersion(line.split(" ")[1]);
-					}
-					if (numLine == searchEngineLine + 1) {
+					} else if (searchEngineLine > -1 && numLine >= searchEngineLine + 1 && !locusStarted
+							&& !line.startsWith("Locus")) {
 						commandLineParameterStrings.add(line);
 						commandLineParameter = new DTASelectCommandLineParameters(line);
-					}
-					if (line.startsWith("DTASelect")) {
+					} else if (line.startsWith("DTASelect")) {
 						// DTASelectProtein p = new DTASelectProtein("DTA", 0,
 						// 0, 0,
 						// line);
 						// ptable.put("DTA", p);
 						intro = true;
 						continue;
-					}
-					if (line.startsWith("Locus")) {
+					} else if (line.startsWith("Locus")) {
+						locusStarted = true;
 						// parse psm header positions
 						String[] splitted = line.split("\t");
 						for (int position = 0; position < splitted.length; position++) {
@@ -179,8 +181,7 @@ public class DTASelectParser {
 						// ptable.put("Title", p);
 						intro = false;
 						continue;
-					}
-					if (line.startsWith("Unique")) {
+					} else if (line.startsWith("Unique")) {
 						// parse psm header positions
 						String[] splitted = line.split("\t");
 						for (int position = 0; position < splitted.length; position++) {
