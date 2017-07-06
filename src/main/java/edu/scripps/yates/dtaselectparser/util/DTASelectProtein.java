@@ -1,14 +1,14 @@
 package edu.scripps.yates.dtaselectparser.util;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 
 import edu.scripps.yates.dbindex.IndexedProtein;
+import gnu.trove.map.hash.TObjectIntHashMap;
+import gnu.trove.set.hash.THashSet;
 
 public class DTASelectProtein {
 	private static final Logger log = Logger.getLogger(DTASelectProtein.class);
@@ -35,7 +35,7 @@ public class DTASelectProtein {
 	private final List<DTASelectProteinGroup> proteinGroups = new ArrayList<DTASelectProteinGroup>();
 	private String searchEngine;
 
-	public DTASelectProtein(String lineToParse, HashMap<String, Integer> positions) {
+	public DTASelectProtein(String lineToParse, TObjectIntHashMap<String> positions) {
 		// log.info("Creating protein from line: " + lineToParse);
 		final String[] elements = lineToParse.split("\t");
 		id = elements[positions.get(ID)];
@@ -200,6 +200,7 @@ public class DTASelectProtein {
 
 	/*
 	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -260,7 +261,7 @@ public class DTASelectProtein {
 	}
 
 	public Set<String> getPeptideSequences() {
-		Set<String> peptideSequences = new HashSet<String>();
+		Set<String> peptideSequences = new THashSet<String>();
 		final List<DTASelectPSM> psMs2 = getPSMs();
 		for (DTASelectPSM dtaSelectPSM : psMs2) {
 			peptideSequences.add(dtaSelectPSM.getSequence().getSequence());

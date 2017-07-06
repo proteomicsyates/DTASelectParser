@@ -1,7 +1,5 @@
 package edu.scripps.yates.dtaselectparser.util;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -10,10 +8,13 @@ import org.apache.log4j.Logger;
 
 import edu.scripps.yates.dtaselectparser.DTASelectParser;
 import edu.scripps.yates.utilities.fasta.FastaParser;
+import gnu.trove.map.hash.THashMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
+import gnu.trove.set.hash.THashSet;
 
 public class DTASelectPSM {
 	private static final Logger log = Logger.getLogger(DTASelectParser.class);
-	public static final Map<String, DTASelectPSM> map = new HashMap<String, DTASelectPSM>();
+	public static final Map<String, DTASelectPSM> map = new THashMap<String, DTASelectPSM>();
 	public static final String PSM_ID = "FileName";
 	private static final String XCORR = "XCorr";
 	private static final String DELTACN = "DeltCN";
@@ -47,7 +48,7 @@ public class DTASelectPSM {
 	private final Double pi;
 	private final String fullSequence;
 	private final String scan;
-	private final Set<DTASelectProtein> proteins = new HashSet<DTASelectProtein>();
+	private final Set<DTASelectProtein> proteins = new THashSet<DTASelectProtein>();
 	private final String runID;
 	private final String runPath;
 	private String searchEngine;
@@ -57,7 +58,7 @@ public class DTASelectPSM {
 	private String msRunId;
 	private Double rtInMinutes;
 
-	public DTASelectPSM(String dtaSelectRow, HashMap<String, Integer> positions, String runPath) {
+	public DTASelectPSM(String dtaSelectRow, TObjectIntHashMap<String> positions, String runPath) {
 		// log.info("Creating PSM from line: " + dtaSelectRow);
 
 		this.runPath = runPath;

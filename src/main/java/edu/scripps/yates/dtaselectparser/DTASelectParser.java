@@ -13,8 +13,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,30 +39,33 @@ import edu.scripps.yates.utilities.progresscounter.ProgressPrintingType;
 import edu.scripps.yates.utilities.proteomicsmodel.Accession;
 import edu.scripps.yates.utilities.remote.RemoteSSHFileReference;
 import edu.scripps.yates.utilities.util.Pair;
+import gnu.trove.map.hash.THashMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
+import gnu.trove.set.hash.THashSet;
 
 public class DTASelectParser {
 	private static final Logger log = Logger.getLogger(DTASelectParser.class);
-	private final HashMap<String, DTASelectProtein> proteinsByAccession = new HashMap<String, DTASelectProtein>();
-	private final HashMap<String, DTASelectPSM> psmTableByPSMID = new HashMap<String, DTASelectPSM>();
+	private final Map<String, DTASelectProtein> proteinsByAccession = new THashMap<String, DTASelectProtein>();
+	private final Map<String, DTASelectPSM> psmTableByPSMID = new THashMap<String, DTASelectPSM>();
 
-	private final HashMap<String, Set<DTASelectPSM>> psmTableByFullSequence = new HashMap<String, Set<DTASelectPSM>>();
-	private final Set<DTASelectProteinGroup> dtaSelectProteinGroups = new HashSet<DTASelectProteinGroup>();
+	private final Map<String, Set<DTASelectPSM>> psmTableByFullSequence = new THashMap<String, Set<DTASelectPSM>>();
+	private final Set<DTASelectProteinGroup> dtaSelectProteinGroups = new THashSet<DTASelectProteinGroup>();
 	private final List<String> keys = new ArrayList<String>();
 	public static final String PROLUCID = "ProLuCID";
 	public static final String SEQUEST = "Sequest";
 	private String runPath;
 	private DBIndexInterface dbIndex;
 	private boolean processed = false;
-	private final HashMap<String, InputStream> fs;
+	private final Map<String, InputStream> fs;
 	private Pattern decoyPattern;
 	private final List<String> commandLineParameterStrings = new ArrayList<String>();
-	private final Set<String> searchEngines = new HashSet<String>();
+	private final Set<String> searchEngines = new THashSet<String>();
 	private DTASelectCommandLineParameters commandLineParameter;
 	private String searchEngineVersion;
 	private String fastaPath;
-	private final Set<String> spectraFileNames = new HashSet<String>();
+	private final Set<String> spectraFileNames = new THashSet<String>();
 	private String dtaSelectVersion;
-	private final Set<String> spectraFileFullPaths = new HashSet<String>();
+	private final Set<String> spectraFileFullPaths = new THashSet<String>();
 	private UniprotProteinLocalRetriever uplr;
 	private String uniprotVersion;
 	private boolean ignoreNotFoundPeptidesInDB;
@@ -78,7 +79,7 @@ public class DTASelectParser {
 	}
 
 	public DTASelectParser(Map<String, RemoteSSHFileReference> s) throws FileNotFoundException {
-		fs = new HashMap<String, InputStream>();
+		fs = new THashMap<String, InputStream>();
 		for (String key : s.keySet()) {
 			RemoteSSHFileReference server = s.get(key);
 			// final File remoteFile = server.getRemoteFile();
@@ -88,28 +89,28 @@ public class DTASelectParser {
 	}
 
 	public DTASelectParser(List<File> s) throws FileNotFoundException {
-		fs = new HashMap<String, InputStream>();
+		fs = new THashMap<String, InputStream>();
 		for (File remoteFile : s) {
 			fs.put(remoteFile.getAbsolutePath(), new FileInputStream(remoteFile));
 		}
 	}
 
 	public DTASelectParser(File file) throws FileNotFoundException {
-		fs = new HashMap<String, InputStream>();
+		fs = new THashMap<String, InputStream>();
 		fs.put(file.getAbsolutePath(), new FileInputStream(file));
 	}
 
 	public DTASelectParser(String runId, InputStream f) {
-		fs = new HashMap<String, InputStream>();
+		fs = new THashMap<String, InputStream>();
 		fs.put(runId, f);
 	}
 
 	private void process() throws IOException {
-		Set<String> psmIds = new HashSet<String>();
+		Set<String> psmIds = new THashSet<String>();
 
 		DTASelectProteinGroup currentProteinGroup = new DTASelectProteinGroup();
-		HashMap<String, Integer> psmHeaderPositions = new HashMap<String, Integer>();
-		HashMap<String, Integer> proteinHeaderPositions = new HashMap<String, Integer>();
+		TObjectIntHashMap<String> psmHeaderPositions = new TObjectIntHashMap<String>();
+		TObjectIntHashMap<String> proteinHeaderPositions = new TObjectIntHashMap<String>();
 		int numDecoy = 0;
 		for (String runId : fs.keySet()) {
 			log.info("Reading input stream: " + runId + "...");
@@ -388,7 +389,7 @@ public class DTASelectParser {
 		if (psmTableByFullSequence.containsKey(psmKey)) {
 			psmTableByFullSequence.get(psmKey).add(psm);
 		} else {
-			Set<DTASelectPSM> set = new HashSet<DTASelectPSM>();
+			Set<DTASelectPSM> set = new THashSet<DTASelectPSM>();
 			set.add(psm);
 			psmTableByFullSequence.put(psmKey, set);
 		}
@@ -402,7 +403,7 @@ public class DTASelectParser {
 	 * @param positions
 	 * @return
 	 */
-	public static String getPSMIdentifier(String line, HashMap<String, Integer> positions) {
+	public static String getPSMIdentifier(String line, TObjectIntHashMap<String> positions) {
 
 		String[] elements = line.split("\t");
 
@@ -418,7 +419,7 @@ public class DTASelectParser {
 		return fileName + "-" + scan + "-" + charge + "-" + fullSequence;
 	}
 
-	public HashMap<String, DTASelectProtein> getDTASelectProteins() throws IOException {
+	public Map<String, DTASelectProtein> getDTASelectProteins() throws IOException {
 		if (!processed)
 			startProcess();
 
@@ -434,13 +435,13 @@ public class DTASelectParser {
 		return dtaSelectProteinGroups;
 	}
 
-	public HashMap<String, DTASelectPSM> getDTASelectPSMsByPSMID() throws IOException {
+	public Map<String, DTASelectPSM> getDTASelectPSMsByPSMID() throws IOException {
 		if (!processed)
 			startProcess();
 		return psmTableByPSMID;
 	}
 
-	public HashMap<String, Set<DTASelectPSM>> getDTASelectPSMsByFullSequence() throws IOException {
+	public Map<String, Set<DTASelectPSM>> getDTASelectPSMsByFullSequence() throws IOException {
 		if (!processed)
 			startProcess();
 		return psmTableByFullSequence;
@@ -569,9 +570,9 @@ public class DTASelectParser {
 		if (uplr == null) {
 			return;
 		}
-		Set<String> accessions = new HashSet<String>();
-		Map<String, String> accToLocus = new HashMap<String, String>();
-		HashMap<String, DTASelectProtein> dtaSelectProteins = getDTASelectProteins();
+		Set<String> accessions = new THashSet<String>();
+		Map<String, String> accToLocus = new THashMap<String, String>();
+		Map<String, DTASelectProtein> dtaSelectProteins = getDTASelectProteins();
 		for (DTASelectProtein protein : dtaSelectProteins.values()) {
 			final String accession = FastaParser.getACC(protein.getLocus()).getFirstelement();
 			accessions.add(accession);
@@ -584,12 +585,12 @@ public class DTASelectParser {
 		// split into chunks of 500 accessions in order to show progress
 		int chunckSize = 500;
 		List<Set<String>> listOfSets = new ArrayList<Set<String>>();
-		Set<String> set = new HashSet<String>();
+		Set<String> set = new THashSet<String>();
 		for (String accession : accessions) {
 			set.add(accession);
 			if (set.size() == chunckSize) {
 				listOfSets.add(set);
-				set = new HashSet<String>();
+				set = new THashSet<String>();
 			}
 		}
 		listOfSets.add(set);
@@ -653,7 +654,7 @@ public class DTASelectParser {
 	private void mapIPI2Uniprot() {
 		if (!proteinsByAccession.isEmpty()) {
 			int originalNumberOfEntries = proteinsByAccession.size();
-			Map<String, DTASelectProtein> newMap = new HashMap<String, DTASelectProtein>();
+			Map<String, DTASelectProtein> newMap = new THashMap<String, DTASelectProtein>();
 			for (String accession : proteinsByAccession.keySet()) {
 
 				final Pair<String, String> acc = FastaParser.getACC(accession);
@@ -714,7 +715,7 @@ public class DTASelectParser {
 			// so we need to discard them
 			// We iterate over the psms, and we will remove the ones with no
 			// proteins
-			Set<String> psmIdsToDelete = new HashSet<String>();
+			Set<String> psmIdsToDelete = new THashSet<String>();
 			for (String psmID : psmTableByPSMID.keySet()) {
 				if (psmTableByPSMID.get(psmID).getProteins().isEmpty()) {
 					psmIdsToDelete.add(psmID);
@@ -772,7 +773,7 @@ public class DTASelectParser {
 	}
 
 	public Set<String> getUniprotAccSet() {
-		Set<String> ret = new HashSet<String>();
+		Set<String> ret = new THashSet<String>();
 		try {
 			Set<String> keySet = getDTASelectProteins().keySet();
 			for (String acc : keySet) {

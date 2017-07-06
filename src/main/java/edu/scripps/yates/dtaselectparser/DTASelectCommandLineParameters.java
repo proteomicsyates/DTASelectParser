@@ -1,7 +1,8 @@
 package edu.scripps.yates.dtaselectparser;
 
-import java.util.HashMap;
 import java.util.Map;
+
+import gnu.trove.map.hash.THashMap;
 
 /**
  * Parse command line parameters of DTASElect like -p 1 -y 2 --trypstat --fp
@@ -12,7 +13,7 @@ import java.util.Map;
  */
 public class DTASelectCommandLineParameters {
 
-	private final Map<String, String> parameters = new HashMap<String, String>();
+	private final Map<String, String> parameters = new THashMap<String, String>();
 
 	public DTASelectCommandLineParameters(String commandLineParameters) {
 		final String[] split = commandLineParameters.split(" ");
@@ -45,8 +46,7 @@ public class DTASelectCommandLineParameters {
 
 	public static void main(String[] args) {
 		String paramString = " -p 1 -y 2 --trypstat --fp 0.01 --modstat --extra --pI -DM 5 --DB --dm -m 0 -S 3.5 --quiet ";
-		DTASelectCommandLineParameters d = new DTASelectCommandLineParameters(
-				paramString);
+		DTASelectCommandLineParameters d = new DTASelectCommandLineParameters(paramString);
 		System.out.println(paramString);
 		Map<String, String> parameters2 = d.getParametersMap();
 		for (String param : parameters2.keySet()) {
