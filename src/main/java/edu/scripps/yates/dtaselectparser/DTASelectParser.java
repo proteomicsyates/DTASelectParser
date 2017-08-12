@@ -96,8 +96,10 @@ public class DTASelectParser {
 	}
 
 	public DTASelectParser(File file) throws FileNotFoundException {
+		log.info("Beggining of constructor with file " + file.getAbsolutePath());
 		fs = new THashMap<String, InputStream>();
 		fs.put(file.getAbsolutePath(), new FileInputStream(file));
+		log.info("end of constructor");
 	}
 
 	public DTASelectParser(String runId, InputStream f) {
