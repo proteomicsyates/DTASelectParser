@@ -137,7 +137,7 @@ public class DTASelectParser {
 						continue;
 					}
 					// if (numLine % 10 == 0) {
-					// log.info(numLine + " lines readed");
+					// log.info(numLine + " lines read");
 					// }
 					// log.info(line);
 					if (numLine == 1) {
@@ -350,7 +350,7 @@ public class DTASelectParser {
 				}
 				if (dbIndex == null) {
 					dtaSelectProteinGroups.add(currentProteinGroup);
-					log.info(dtaSelectProteinGroups.size() + " proteins groups readed in " + fs.size()
+					log.info(dtaSelectProteinGroups.size() + " proteins groups read in " + fs.size()
 							+ " DTASelect file(s).");
 				}
 			} catch (Exception e) {
@@ -703,9 +703,9 @@ public class DTASelectParser {
 		// third merge proteins with secondary accessions
 		mergeProteinsWithSecondaryAccessionsInParser();
 
-		log.info(proteinsByAccession.size() + " proteins readed in " + fs.size() + " DTASelect file(s).");
-		log.info(psmTableByFullSequence.size() + " peptides readed in " + fs.size() + " DTASelect file(s).");
-		log.info(psmTableByPSMID.size() + " psms readed in " + fs.size() + " DTASelect file(s).");
+		log.info(proteinsByAccession.size() + " proteins read in " + fs.size() + " DTASelect file(s).");
+		log.info(psmTableByFullSequence.size() + " peptides read in " + fs.size() + " DTASelect file(s).");
+		log.info(psmTableByPSMID.size() + " psms read in " + fs.size() + " DTASelect file(s).");
 
 	}
 

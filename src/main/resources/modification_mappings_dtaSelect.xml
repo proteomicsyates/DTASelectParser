@@ -765,5 +765,14 @@
 				<psi_modification id="MOD:00582" title="13C(6) 15N(2) Silac label" general_modification="1" specific_modification="0" origin="K" term_spec="none" obsolete="0"/>
 			</psi_modifications>
 		</pride_modification>	
+		<!-- added by Salva on 9/15/2017 for supporting ubiquitinmodification -->
+		<pride_modification title="ubiquitinylation lysine" id="47" diff_mono="114.042927" biological_significance="0">
+			<unimod_mappings>
+				<unimod_mapping id="121"/>
+			</unimod_mappings>
+			<psi_modifications>
+				<psi_modification id="MOD:01148" title="ubiquitinylation lysine" general_modification="1" specific_modification="0" origin="K" term_spec="none" obsolete="0"/>
+			</psi_modifications>
+		</pride_modification>
 	</pride_modifications>
 </pride_mod>
