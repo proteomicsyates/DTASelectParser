@@ -20,6 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 
 import edu.scripps.yates.annotations.uniprot.UniprotProteinLocalRetriever;
@@ -110,7 +111,7 @@ public class DTASelectParser {
 	private void process() throws IOException {
 		Set<String> psmIds = new THashSet<String>();
 
-		DTASelectProteinGroup currentProteinGroup = new DTASelectProteinGroup();
+		DTASelectProteinGroup currentProteinGroup = null;
 		TObjectIntHashMap<String> psmHeaderPositions = new TObjectIntHashMap<String>();
 		TObjectIntHashMap<String> proteinHeaderPositions = new TObjectIntHashMap<String>();
 		int numDecoy = 0;
@@ -120,7 +121,7 @@ public class DTASelectParser {
 			InputStream f = null;
 			try {
 				f = fs.get(runId);
-
+				currentProteinGroup = new DTASelectProteinGroup();
 				BufferedInputStream bis = new BufferedInputStream(f);
 				BufferedReader dis = new BufferedReader(new InputStreamReader(bis));
 
@@ -228,7 +229,7 @@ public class DTASelectParser {
 
 					// this is the case of a protein
 					if (isNumeric(elements[1])) {
-
+						// log.info(line);
 						// if comes from a psm line, clear the current group of
 						// proteins
 						if (isPsm && dbIndex == null) {
@@ -262,7 +263,7 @@ public class DTASelectParser {
 						// }
 						isPsm = false;
 					} else {
-						// System.out.println(line);
+						log.info(line);
 
 						// this is the case of a psm
 						isPsm = true;
@@ -450,12 +451,8 @@ public class DTASelectParser {
 	}
 
 	private boolean isNumeric(String string) {
-		try {
-			Double.valueOf(string);
-			return true;
-		} catch (NumberFormatException e) {
-			return false;
-		}
+		return NumberUtils.isNumber(string);
+
 	}
 
 	/**
