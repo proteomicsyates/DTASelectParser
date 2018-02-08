@@ -4,6 +4,11 @@ import java.util.ArrayList;
 
 public class DTASelectProteinGroup extends ArrayList<DTASelectProtein> {
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1051891453675105485L;
+
+	/**
 	 * This assumes that the {@link DTASelectProtein} only belongs to one group
 	 */
 	@Override
