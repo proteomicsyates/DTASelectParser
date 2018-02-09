@@ -54,6 +54,7 @@ public class DTASelectParser {
 	private final List<String> keys = new ArrayList<String>();
 	public static final String PROLUCID = "ProLuCID";
 	public static final String SEQUEST = "Sequest";
+	private static final String UNKNOWN = "Unknown";
 	private String runPath;
 	private DBIndexInterface dbIndex;
 	private boolean processed = false;
@@ -157,6 +158,10 @@ public class DTASelectParser {
 					} else if (line.toLowerCase().startsWith(PROLUCID.toLowerCase())) {
 						searchEngineLine = numLine;
 						searchEngines.add(PROLUCID);
+						setSearchEngineVersion(line.split(" ")[1]);
+					} else if (line.toLowerCase().startsWith("?")) {
+						searchEngineLine = numLine;
+						searchEngines.add(UNKNOWN);
 						setSearchEngineVersion(line.split(" ")[1]);
 					} else if (searchEngineLine > -1 && numLine >= searchEngineLine + 1 && !locusStarted
 							&& !line.startsWith("Locus")) {
@@ -263,7 +268,7 @@ public class DTASelectParser {
 						// }
 						isPsm = false;
 					} else {
-						log.info(line);
+						// log.info(line);
 
 						// this is the case of a psm
 						isPsm = true;
