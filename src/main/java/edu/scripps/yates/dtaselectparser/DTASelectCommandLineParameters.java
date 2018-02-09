@@ -16,7 +16,7 @@ public class DTASelectCommandLineParameters {
 	private final Map<String, String> parameters = new THashMap<String, String>();
 
 	public DTASelectCommandLineParameters(String commandLineParameters) {
-		final String[] split = commandLineParameters.split(" ");
+		final String[] split = commandLineParameters.trim().split(" ");
 
 		String parameter = null;
 		String value = null;
@@ -34,6 +34,11 @@ public class DTASelectCommandLineParameters {
 					parameter = null;
 				}
 			}
+		}
+		// insert the last one
+		if (parameter != null) {
+			parameters.put(parameter, value);
+			parameter = null;
 		}
 	}
 
