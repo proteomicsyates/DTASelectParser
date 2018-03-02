@@ -32,6 +32,7 @@ import edu.scripps.yates.dtaselectparser.util.DTASelectPSM;
 import edu.scripps.yates.dtaselectparser.util.DTASelectProtein;
 import edu.scripps.yates.dtaselectparser.util.DTASelectProteinGroup;
 import edu.scripps.yates.utilities.fasta.FastaParser;
+import edu.scripps.yates.utilities.files.Parser;
 import edu.scripps.yates.utilities.ipi.IPI2UniprotACCMap;
 import edu.scripps.yates.utilities.model.enums.AccessionType;
 import edu.scripps.yates.utilities.model.factories.AccessionEx;
@@ -44,7 +45,7 @@ import gnu.trove.map.hash.THashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import gnu.trove.set.hash.THashSet;
 
-public class DTASelectParser {
+public class DTASelectParser implements Parser {
 	private static final Logger log = Logger.getLogger(DTASelectParser.class);
 	private final Map<String, DTASelectProtein> proteinsByAccession = new THashMap<String, DTASelectProtein>();
 	private final Map<String, DTASelectPSM> psmTableByPSMID = new THashMap<String, DTASelectPSM>();
@@ -95,21 +96,27 @@ public class DTASelectParser {
 		for (File remoteFile : s) {
 			fs.put(remoteFile.getAbsolutePath(), new FileInputStream(remoteFile));
 		}
+
 	}
 
 	public DTASelectParser(File file) throws FileNotFoundException {
-		log.info("Beggining of constructor with file " + file.getAbsolutePath());
+		log.debug("Beggining of constructor with file " + file.getAbsolutePath());
 		fs = new THashMap<String, InputStream>();
 		fs.put(file.getAbsolutePath(), new FileInputStream(file));
-		log.info("end of constructor");
+		log.debug("end of constructor");
 	}
 
 	public DTASelectParser(String runId, InputStream f) {
 		fs = new THashMap<String, InputStream>();
 		fs.put(runId, f);
+
 	}
 
 	private void process() throws IOException {
+		process(false);
+	}
+
+	private void process(boolean checkFormat) throws IOException {
 		Set<String> psmIds = new THashSet<String>();
 
 		DTASelectProteinGroup currentProteinGroup = null;
@@ -350,6 +357,10 @@ public class DTASelectParser {
 								prot.addPSM(psm);
 								psm.addProtein(prot);
 							}
+						}
+						if (checkFormat) {
+							// just return with no errors
+							return;
 						}
 					}
 
@@ -791,5 +802,23 @@ public class DTASelectParser {
 		}
 
 		return ret;
+	}
+
+	@Override
+	public boolean canRead(File file) {
+		try {
+			if (!processed) {
+				process(true);
+			}
+			if (!this.proteinsByAccession.isEmpty()) {
+				if (!this.psmTableByPSMID.isEmpty()) {
+					return true;
+				}
+			}
+		} catch (Exception e) {
+
+		}
+		return false;
+
 	}
 }
