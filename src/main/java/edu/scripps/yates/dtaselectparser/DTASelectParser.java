@@ -168,7 +168,10 @@ public class DTASelectParser implements Parser {
 						setSearchEngineVersion(line.split(" ")[1]);
 					} else if (line.toLowerCase().startsWith("?")) {
 						searchEngineLine = numLine;
-						searchEngines.add(UNKNOWN);
+						// searchEngines.add(UNKNOWN);
+						// if not known, report as SEQUEST as it is the most
+						// common
+						searchEngines.add(SEQUEST);
 						setSearchEngineVersion(line.split(" ")[1]);
 					} else if (searchEngineLine > -1 && numLine >= searchEngineLine + 1 && !locusStarted
 							&& !line.startsWith("Locus")) {
