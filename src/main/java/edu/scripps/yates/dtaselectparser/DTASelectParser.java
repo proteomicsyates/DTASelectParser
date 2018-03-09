@@ -6,7 +6,6 @@ package edu.scripps.yates.dtaselectparser;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +31,7 @@ import edu.scripps.yates.dtaselectparser.util.DTASelectPSM;
 import edu.scripps.yates.dtaselectparser.util.DTASelectProtein;
 import edu.scripps.yates.dtaselectparser.util.DTASelectProteinGroup;
 import edu.scripps.yates.utilities.fasta.FastaParser;
+import edu.scripps.yates.utilities.files.FileUtils;
 import edu.scripps.yates.utilities.files.Parser;
 import edu.scripps.yates.utilities.ipi.IPI2UniprotACCMap;
 import edu.scripps.yates.utilities.model.enums.AccessionType;
@@ -94,7 +94,7 @@ public class DTASelectParser implements Parser {
 	public DTASelectParser(List<File> s) throws FileNotFoundException {
 		fs = new THashMap<String, InputStream>();
 		for (File remoteFile : s) {
-			fs.put(remoteFile.getAbsolutePath(), new FileInputStream(remoteFile));
+			fs.put(remoteFile.getAbsolutePath(), FileUtils.getInputStream(remoteFile));
 		}
 
 	}
@@ -102,7 +102,7 @@ public class DTASelectParser implements Parser {
 	public DTASelectParser(File file) throws FileNotFoundException {
 		log.debug("Beggining of constructor with file " + file.getAbsolutePath());
 		fs = new THashMap<String, InputStream>();
-		fs.put(file.getAbsolutePath(), new FileInputStream(file));
+		fs.put(file.getAbsolutePath(), FileUtils.getInputStream(file));
 		log.debug("end of constructor");
 	}
 
@@ -810,6 +810,7 @@ public class DTASelectParser implements Parser {
 	@Override
 	public boolean canRead(File file) {
 		try {
+			fs.put("TMP***", FileUtils.getInputStream(file));
 			if (!processed) {
 				process(true);
 			}
@@ -818,10 +819,11 @@ public class DTASelectParser implements Parser {
 					return true;
 				}
 			}
+			return false;
 		} catch (Exception e) {
-
+			return false;
+		} finally {
+			fs.remove("TMP***");
 		}
-		return false;
-
 	}
 }
