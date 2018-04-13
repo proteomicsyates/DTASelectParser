@@ -7,6 +7,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import edu.scripps.yates.dbindex.IndexedProtein;
+import edu.scripps.yates.utilities.fasta.FastaParser;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import gnu.trove.set.hash.THashSet;
 
@@ -34,6 +35,7 @@ public class DTASelectProtein {
 	private Double empai;
 	private final List<DTASelectProteinGroup> proteinGroups = new ArrayList<DTASelectProteinGroup>();
 	private String searchEngine;
+	private String acc;
 
 	public DTASelectProtein(String lineToParse, TObjectIntHashMap<String> positions) {
 		// log.info("Creating protein from line: " + lineToParse);
@@ -185,9 +187,9 @@ public class DTASelectProtein {
 	 * @return
 	 */
 	public List<DTASelectProtein> getSibilingProteinsInGroup() {
-		List<DTASelectProtein> ret = new ArrayList<DTASelectProtein>();
-		for (DTASelectProteinGroup dtaSelectProteinGroup : proteinGroups) {
-			for (DTASelectProtein dtaSelectProtein : dtaSelectProteinGroup) {
+		final List<DTASelectProtein> ret = new ArrayList<DTASelectProtein>();
+		for (final DTASelectProteinGroup dtaSelectProteinGroup : proteinGroups) {
+			for (final DTASelectProtein dtaSelectProtein : dtaSelectProteinGroup) {
 				if (!dtaSelectProtein.getLocus().equals(getLocus()))
 					ret.add(dtaSelectProtein);
 			}
@@ -261,11 +263,23 @@ public class DTASelectProtein {
 	}
 
 	public Set<String> getPeptideSequences() {
-		Set<String> peptideSequences = new THashSet<String>();
+		final Set<String> peptideSequences = new THashSet<String>();
 		final List<DTASelectPSM> psMs2 = getPSMs();
-		for (DTASelectPSM dtaSelectPSM : psMs2) {
+		for (final DTASelectPSM dtaSelectPSM : psMs2) {
 			peptideSequences.add(dtaSelectPSM.getSequence().getSequence());
 		}
 		return peptideSequences;
+	}
+
+	/**
+	 * returns the result of calling to FastaParser.getACC(getLocus))
+	 * 
+	 * @return
+	 */
+	public String getAccession() {
+		if (acc == null) {
+			acc = FastaParser.getACC(getLocus()).getFirstelement();
+		}
+		return acc;
 	}
 }

@@ -83,8 +83,8 @@ public class DTASelectParser implements Parser {
 
 	public DTASelectParser(Map<String, RemoteSSHFileReference> s) throws FileNotFoundException {
 		fs = new THashMap<String, InputStream>();
-		for (String key : s.keySet()) {
-			RemoteSSHFileReference server = s.get(key);
+		for (final String key : s.keySet()) {
+			final RemoteSSHFileReference server = s.get(key);
 			// final File remoteFile = server.getRemoteFile();
 			fs.put(key, server.getRemoteInputStream());
 		}
@@ -93,7 +93,7 @@ public class DTASelectParser implements Parser {
 
 	public DTASelectParser(List<File> s) throws FileNotFoundException {
 		fs = new THashMap<String, InputStream>();
-		for (File remoteFile : s) {
+		for (final File remoteFile : s) {
 			fs.put(remoteFile.getAbsolutePath(), FileUtils.getInputStream(remoteFile));
 		}
 
@@ -117,21 +117,21 @@ public class DTASelectParser implements Parser {
 	}
 
 	private void process(boolean checkFormat) throws IOException {
-		Set<String> psmIds = new THashSet<String>();
+		final Set<String> psmIds = new THashSet<String>();
 
 		DTASelectProteinGroup currentProteinGroup = null;
-		TObjectIntHashMap<String> psmHeaderPositions = new TObjectIntHashMap<String>();
-		TObjectIntHashMap<String> proteinHeaderPositions = new TObjectIntHashMap<String>();
+		final TObjectIntHashMap<String> psmHeaderPositions = new TObjectIntHashMap<String>();
+		final TObjectIntHashMap<String> proteinHeaderPositions = new TObjectIntHashMap<String>();
 		int numDecoy = 0;
-		for (String runId : fs.keySet()) {
+		for (final String runId : fs.keySet()) {
 			log.info("Reading input stream: " + runId + "...");
 
 			InputStream f = null;
 			try {
 				f = fs.get(runId);
 				currentProteinGroup = new DTASelectProteinGroup();
-				BufferedInputStream bis = new BufferedInputStream(f);
-				BufferedReader dis = new BufferedReader(new InputStreamReader(bis));
+				final BufferedInputStream bis = new BufferedInputStream(f);
+				final BufferedReader dis = new BufferedReader(new InputStreamReader(bis));
 
 				String line;
 				int numLine = 0;
@@ -187,9 +187,9 @@ public class DTASelectParser implements Parser {
 					} else if (line.startsWith("Locus")) {
 						locusStarted = true;
 						// parse psm header positions
-						String[] splitted = line.split("\t");
+						final String[] splitted = line.split("\t");
 						for (int position = 0; position < splitted.length; position++) {
-							String header = splitted[position];
+							final String header = splitted[position];
 							proteinHeaderPositions.put(header, position);
 						}
 
@@ -202,9 +202,9 @@ public class DTASelectParser implements Parser {
 						continue;
 					} else if (line.startsWith("Unique")) {
 						// parse psm header positions
-						String[] splitted = line.split("\t");
+						final String[] splitted = line.split("\t");
 						for (int position = 0; position < splitted.length; position++) {
-							String header = splitted[position];
+							final String header = splitted[position];
 							psmHeaderPositions.put(header, position);
 						}
 
@@ -230,7 +230,7 @@ public class DTASelectParser implements Parser {
 						continue;
 					}
 
-					String[] elements = line.split("\t");
+					final String[] elements = line.split("\t");
 					// if (elements[1].equals("DTASelectProteins")) {
 					if (elements[1].equals("Proteins")) {
 						conclusion = true;
@@ -256,8 +256,8 @@ public class DTASelectParser implements Parser {
 						}
 						// if (dbIndex == null) {
 						DTASelectProtein p = new DTASelectProtein(line, proteinHeaderPositions);
-						if (proteinsByAccession.containsKey(p.getLocus())) {
-							DTASelectProtein p2 = proteinsByAccession.get(p.getLocus());
+						if (proteinsByAccession.containsKey(p.getAccession())) {
+							final DTASelectProtein p2 = proteinsByAccession.get(p.getAccession());
 							p = mergeProteins(p, p2);
 						}
 						if (!searchEngines.isEmpty())
@@ -271,8 +271,8 @@ public class DTASelectParser implements Parser {
 							}
 						}
 						if (!skip) {
-							proteinsByAccession.put(p.getLocus(), p);
-							keys.add(p.getLocus());
+							proteinsByAccession.put(p.getAccession(), p);
+							keys.add(p.getAccession());
 							currentProteinGroup.add(p);
 						}
 						// }
@@ -282,7 +282,7 @@ public class DTASelectParser implements Parser {
 
 						// this is the case of a psm
 						isPsm = true;
-						String psmID = getPSMIdentifier(line, psmHeaderPositions);
+						final String psmID = getPSMIdentifier(line, psmHeaderPositions);
 						psmIds.add(psmID);
 						DTASelectPSM psm;
 						if (psmTableByPSMID.containsKey(psmID)) {
@@ -297,7 +297,7 @@ public class DTASelectParser implements Parser {
 								log.debug(psm.getRawFileName() + " added to a set of " + spectraFileNames.size()
 										+ " spectra file names in total");
 							}
-							String spectraFileFullPath = new File(runId).getParent() + File.separator
+							final String spectraFileFullPath = new File(runId).getParent() + File.separator
 									+ psm.getRawFileName() + ".ms2";
 							if (!spectraFileFullPaths.contains(spectraFileFullPath)) {
 								spectraFileFullPaths.add(spectraFileFullPath);
@@ -310,7 +310,7 @@ public class DTASelectParser implements Parser {
 							// the
 							// proteins
 							if (dbIndex != null) {
-								Set<IndexedProtein> indexedProteins = dbIndex
+								final Set<IndexedProtein> indexedProteins = dbIndex
 										.getProteins(psm.getSequence().getSequence());
 								if (indexedProteins.isEmpty()) {
 									if (!ignoreNotFoundPeptidesInDB) {
@@ -322,7 +322,7 @@ public class DTASelectParser implements Parser {
 								if (indexedProteins != null) {
 									log.debug(indexedProteins.size() + " proteins contains "
 											+ psm.getSequence().getSequence() + " on fasta file");
-									for (IndexedProtein indexedProtein : indexedProteins) {
+									for (final IndexedProtein indexedProtein : indexedProteins) {
 										final String indexedAccession = indexedProtein.getAccession();
 										// we should take into account that in
 										// the
@@ -356,7 +356,7 @@ public class DTASelectParser implements Parser {
 							// add the PSM to all the proteins in the current
 							// group
 							// and all the proteins to the psm
-							for (DTASelectProtein prot : currentProteinGroup) {
+							for (final DTASelectProtein prot : currentProteinGroup) {
 								prot.addPSM(psm);
 								psm.addProtein(prot);
 							}
@@ -373,7 +373,7 @@ public class DTASelectParser implements Parser {
 					log.info(dtaSelectProteinGroups.size() + " proteins groups read in " + fs.size()
 							+ " DTASelect file(s).");
 				}
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				e.printStackTrace();
 				log.error(e.getMessage());
 				throw e;
@@ -386,7 +386,7 @@ public class DTASelectParser implements Parser {
 						log.info("Input stream closed");
 
 					}
-				} catch (IOException e) {
+				} catch (final IOException e) {
 					e.printStackTrace();
 					log.error(e.getMessage());
 				}
@@ -411,7 +411,7 @@ public class DTASelectParser implements Parser {
 		if (psmTableByFullSequence.containsKey(psmKey)) {
 			psmTableByFullSequence.get(psmKey).add(psm);
 		} else {
-			Set<DTASelectPSM> set = new THashSet<DTASelectPSM>();
+			final Set<DTASelectPSM> set = new THashSet<DTASelectPSM>();
 			set.add(psm);
 			psmTableByFullSequence.put(psmKey, set);
 		}
@@ -427,15 +427,15 @@ public class DTASelectParser implements Parser {
 	 */
 	public static String getPSMIdentifier(String line, TObjectIntHashMap<String> positions) {
 
-		String[] elements = line.split("\t");
+		final String[] elements = line.split("\t");
 
-		String psmIdentifier = elements[positions.get(DTASelectPSM.PSM_ID)];
+		final String psmIdentifier = elements[positions.get(DTASelectPSM.PSM_ID)];
 		// log.info("PSM id: " + psmIdentifier);
-		String scan = FastaParser.getScanFromPSMIdentifier(psmIdentifier);
+		final String scan = FastaParser.getScanFromPSMIdentifier(psmIdentifier);
 		// log.info("scan number: " + scan);
-		String fileName = FastaParser.getFileNameFromPSMIdentifier(psmIdentifier);
+		final String fileName = FastaParser.getFileNameFromPSMIdentifier(psmIdentifier);
 
-		Integer charge = FastaParser.getChargeStateFromPSMIdentifier(psmIdentifier);
+		final Integer charge = FastaParser.getChargeStateFromPSMIdentifier(psmIdentifier);
 		// log.info("file name: " + fileName);
 		final String fullSequence = elements[positions.get(DTASelectPSM.SEQUENCE)];
 		return fileName + "-" + scan + "-" + charge + "-" + fullSequence;
@@ -588,10 +588,10 @@ public class DTASelectParser implements Parser {
 		if (uplr == null) {
 			return;
 		}
-		Set<String> accessions = new THashSet<String>();
-		Map<String, String> accToLocus = new THashMap<String, String>();
-		Map<String, DTASelectProtein> dtaSelectProteins = getDTASelectProteins();
-		for (DTASelectProtein protein : dtaSelectProteins.values()) {
+		final Set<String> accessions = new THashSet<String>();
+		final Map<String, String> accToLocus = new THashMap<String, String>();
+		final Map<String, DTASelectProtein> dtaSelectProteins = getDTASelectProteins();
+		for (final DTASelectProtein protein : dtaSelectProteins.values()) {
 			final String accession = FastaParser.getACC(protein.getLocus()).getFirstelement();
 			accessions.add(accession);
 			accToLocus.put(accession, protein.getLocus());
@@ -601,10 +601,10 @@ public class DTASelectParser implements Parser {
 			latestVersion = "version " + uniprotVersion;
 		}
 		// split into chunks of 500 accessions in order to show progress
-		int chunckSize = 500;
-		List<Set<String>> listOfSets = new ArrayList<Set<String>>();
+		final int chunckSize = 500;
+		final List<Set<String>> listOfSets = new ArrayList<Set<String>>();
 		Set<String> set = new THashSet<String>();
-		for (String accession : accessions) {
+		for (final String accession : accessions) {
 			set.add(accession);
 			if (set.size() == chunckSize) {
 				listOfSets.add(set);
@@ -616,27 +616,27 @@ public class DTASelectParser implements Parser {
 		int numObsoletes = 0;
 		log.info("Merging proteins that have secondary accessions according to Uniprot " + latestVersion + "...");
 
-		int initialSize = accessions.size();
-		ProgressCounter counter = new ProgressCounter(initialSize, ProgressPrintingType.PERCENTAGE_STEPS, 0);
-		for (Set<String> accessionSet : listOfSets) {
-			Map<String, Entry> annotatedProteins = uplr.getAnnotatedProteins(uniprotVersion, accessionSet);
-			for (String accession : accessionSet) {
+		final int initialSize = accessions.size();
+		final ProgressCounter counter = new ProgressCounter(initialSize, ProgressPrintingType.PERCENTAGE_STEPS, 0);
+		for (final Set<String> accessionSet : listOfSets) {
+			final Map<String, Entry> annotatedProteins = uplr.getAnnotatedProteins(uniprotVersion, accessionSet);
+			for (final String accession : accessionSet) {
 				counter.increment();
-				String progress = counter.printIfNecessary();
+				final String progress = counter.printIfNecessary();
 				if (!"".contentEquals(progress)) {
 					log.info(progress);
 				}
-				DTASelectProtein protein = dtaSelectProteins.get(accToLocus.get(accession));
-				Entry entry = annotatedProteins.get(accession);
+				final DTASelectProtein protein = dtaSelectProteins.get(accToLocus.get(accession));
+				final Entry entry = annotatedProteins.get(accession);
 				if (entry != null && entry.getAccession() != null && !entry.getAccession().isEmpty()) {
-					String primaryAccession = entry.getAccession().get(0);
+					final String primaryAccession = entry.getAccession().get(0);
 					if (!accession.equals(primaryAccession) && !accession.contains(primaryAccession)) {
 						log.info("Replacing Uniprot accession " + accession + " by " + primaryAccession);
 						protein.setLocus(primaryAccession);
 						if (dtaSelectProteins.containsKey(primaryAccession)) {
 							// there was already a protein with that
 							// primaryAccession
-							DTASelectProtein quantifiedProtein2 = dtaSelectProteins.get(primaryAccession);
+							final DTASelectProtein quantifiedProtein2 = dtaSelectProteins.get(primaryAccession);
 							// merge quantifiedPRotein and quantifiedPRotein2
 							mergeProteins(protein, quantifiedProtein2);
 
@@ -655,7 +655,7 @@ public class DTASelectParser implements Parser {
 				}
 			}
 		}
-		int finalSize = dtaSelectProteins.size();
+		final int finalSize = dtaSelectProteins.size();
 		if (initialSize != finalSize) {
 			log.info(finalSize - initialSize
 					+ " proteins with secondary accessions were merged with the corresponding protein with primary accession");
@@ -671,15 +671,15 @@ public class DTASelectParser implements Parser {
 	 */
 	private void mapIPI2Uniprot() {
 		if (!proteinsByAccession.isEmpty()) {
-			int originalNumberOfEntries = proteinsByAccession.size();
-			Map<String, DTASelectProtein> newMap = new THashMap<String, DTASelectProtein>();
-			for (String accession : proteinsByAccession.keySet()) {
+			final int originalNumberOfEntries = proteinsByAccession.size();
+			final Map<String, DTASelectProtein> newMap = new THashMap<String, DTASelectProtein>();
+			for (final String accession : proteinsByAccession.keySet()) {
 
 				final Pair<String, String> acc = FastaParser.getACC(accession);
 				if (acc.getSecondElement().equals("IPI")) {
 					final DTASelectProtein protein = proteinsByAccession.get(accession);
 					Accession primaryAccession = new AccessionEx(accession, AccessionType.IPI);
-					Pair<Accession, Set<Accession>> pair = IPI2UniprotACCMap.getInstance()
+					final Pair<Accession, Set<Accession>> pair = IPI2UniprotACCMap.getInstance()
 							.getPrimaryAndSecondaryAccessionsFromIPI(primaryAccession);
 					if (pair.getFirstelement() != null) {
 						primaryAccession = pair.getFirstelement();
@@ -689,7 +689,7 @@ public class DTASelectParser implements Parser {
 					}
 					final Set<Accession> secondaryAccs = pair.getSecondElement();
 					if (secondaryAccs != null) {
-						for (Accession secondaryAcc : secondaryAccs) {
+						for (final Accession secondaryAcc : secondaryAccs) {
 							if (!newMap.containsKey(secondaryAcc.getAccession())) {
 								newMap.put(secondaryAcc.getAccession(), protein);
 							}
@@ -698,7 +698,7 @@ public class DTASelectParser implements Parser {
 					}
 				}
 			}
-			for (String acc : newMap.keySet()) {
+			for (final String acc : newMap.keySet()) {
 				if (!proteinsByAccession.containsKey(acc)) {
 					proteinsByAccession.put(acc, newMap.get(acc));
 				}
@@ -733,20 +733,20 @@ public class DTASelectParser implements Parser {
 			// so we need to discard them
 			// We iterate over the psms, and we will remove the ones with no
 			// proteins
-			Set<String> psmIdsToDelete = new THashSet<String>();
-			for (String psmID : psmTableByPSMID.keySet()) {
+			final Set<String> psmIdsToDelete = new THashSet<String>();
+			for (final String psmID : psmTableByPSMID.keySet()) {
 				if (psmTableByPSMID.get(psmID).getProteins().isEmpty()) {
 					psmIdsToDelete.add(psmID);
 				}
 			}
 			log.info("Removing " + psmIdsToDelete.size() + " PSMs assigned to decoy discarded proteins");
-			for (String psmID : psmIdsToDelete) {
+			for (final String psmID : psmIdsToDelete) {
 				final DTASelectPSM dtaSelectPSM = psmTableByPSMID.get(psmID);
 				if (!dtaSelectPSM.getProteins().isEmpty()) {
 					throw new IllegalArgumentException("This should not happen");
 				}
 				final Set<DTASelectPSM> set = psmTableByFullSequence.get(dtaSelectPSM.getFullSequence());
-				boolean removed = set.remove(dtaSelectPSM);
+				final boolean removed = set.remove(dtaSelectPSM);
 				if (!removed) {
 					throw new IllegalArgumentException("This should not happen");
 				}
@@ -791,16 +791,16 @@ public class DTASelectParser implements Parser {
 	}
 
 	public Set<String> getUniprotAccSet() {
-		Set<String> ret = new THashSet<String>();
+		final Set<String> ret = new THashSet<String>();
 		try {
-			Set<String> keySet = getDTASelectProteins().keySet();
-			for (String acc : keySet) {
-				String uniProtACC = FastaParser.getUniProtACC(acc);
+			final Set<String> keySet = getDTASelectProteins().keySet();
+			for (final String acc : keySet) {
+				final String uniProtACC = FastaParser.getUniProtACC(acc);
 				if (uniProtACC != null) {
 					ret.add(uniProtACC);
 				}
 			}
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			e.printStackTrace();
 		}
 
@@ -814,13 +814,13 @@ public class DTASelectParser implements Parser {
 			if (!processed) {
 				process(true);
 			}
-			if (!this.proteinsByAccession.isEmpty()) {
-				if (!this.psmTableByPSMID.isEmpty()) {
+			if (!proteinsByAccession.isEmpty()) {
+				if (!psmTableByPSMID.isEmpty()) {
 					return true;
 				}
 			}
 			return false;
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			return false;
 		} finally {
 			fs.remove("TMP***");
