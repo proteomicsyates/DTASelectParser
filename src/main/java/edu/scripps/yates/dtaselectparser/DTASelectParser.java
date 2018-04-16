@@ -589,12 +589,10 @@ public class DTASelectParser implements Parser {
 			return;
 		}
 		final Set<String> accessions = new THashSet<String>();
-		final Map<String, String> accToLocus = new THashMap<String, String>();
 		final Map<String, DTASelectProtein> dtaSelectProteins = getDTASelectProteins();
 		for (final DTASelectProtein protein : dtaSelectProteins.values()) {
 			final String accession = FastaParser.getACC(protein.getLocus()).getFirstelement();
 			accessions.add(accession);
-			accToLocus.put(accession, protein.getLocus());
 		}
 		String latestVersion = "latestVersion";
 		if (uniprotVersion != null) {
@@ -626,7 +624,7 @@ public class DTASelectParser implements Parser {
 				if (!"".contentEquals(progress)) {
 					log.info(progress);
 				}
-				final DTASelectProtein protein = dtaSelectProteins.get(accToLocus.get(accession));
+				final DTASelectProtein protein = dtaSelectProteins.get(accession);
 				final Entry entry = annotatedProteins.get(accession);
 				if (entry != null && entry.getAccession() != null && !entry.getAccession().isEmpty()) {
 					final String primaryAccession = entry.getAccession().get(0);
