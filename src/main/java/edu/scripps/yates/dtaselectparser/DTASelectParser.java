@@ -352,10 +352,9 @@ public class DTASelectParser implements Parser {
 								}
 							}
 						}
-						if (dbIndex == null) {
+						if (dbIndex == null || psm.getProteins().isEmpty()) {
 							// add the PSM to all the proteins in the current
-							// group
-							// and all the proteins to the psm
+							// group and all the proteins to the psm
 							for (final DTASelectProtein prot : currentProteinGroup) {
 								prot.addPSM(psm);
 								psm.addProtein(prot);
