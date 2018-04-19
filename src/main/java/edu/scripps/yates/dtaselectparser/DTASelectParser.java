@@ -72,6 +72,7 @@ public class DTASelectParser implements Parser {
 	private UniprotProteinLocalRetriever uplr;
 	private String uniprotVersion;
 	private boolean ignoreNotFoundPeptidesInDB;
+	private boolean retrieveFastaIsoforms;
 
 	public DTASelectParser(URL u) throws IOException {
 		this(u.getFile(), u.openStream());
@@ -616,7 +617,8 @@ public class DTASelectParser implements Parser {
 		final int initialSize = accessions.size();
 		final ProgressCounter counter = new ProgressCounter(initialSize, ProgressPrintingType.PERCENTAGE_STEPS, 0);
 		for (final Set<String> accessionSet : listOfSets) {
-			final Map<String, Entry> annotatedProteins = uplr.getAnnotatedProteins(uniprotVersion, accessionSet);
+			final Map<String, Entry> annotatedProteins = uplr.getAnnotatedProteins(uniprotVersion, accessionSet,
+					retrieveFastaIsoforms);
 			for (final String accession : accessionSet) {
 				counter.increment();
 				final String progress = counter.printIfNecessary();
@@ -822,5 +824,13 @@ public class DTASelectParser implements Parser {
 		} finally {
 			fs.remove("TMP***");
 		}
+	}
+
+	public boolean isRetrieveFastaIsoforms() {
+		return retrieveFastaIsoforms;
+	}
+
+	public void setRetrieveFastaIsoforms(boolean retrieveFastaIsoforms) {
+		this.retrieveFastaIsoforms = retrieveFastaIsoforms;
 	}
 }
