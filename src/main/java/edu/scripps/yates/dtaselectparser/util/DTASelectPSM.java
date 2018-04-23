@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 
 import edu.scripps.yates.dtaselectparser.DTASelectParser;
 import edu.scripps.yates.utilities.fasta.FastaParser;
+import edu.scripps.yates.utilities.staticstorage.StaticStrings;
 import gnu.trove.map.hash.THashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import gnu.trove.set.hash.THashSet;
@@ -63,7 +64,7 @@ public class DTASelectPSM {
 
 		this.runPath = runPath;
 		// parse the headerRow
-		String[] elements = dtaSelectRow.split("\t");
+		final String[] elements = dtaSelectRow.split("\t");
 		rawPSMIdentifier = elements[positions.get(PSM_ID)];
 		scan = FastaParser.getScanFromPSMIdentifier(rawPSMIdentifier);
 		rawFileName = FastaParser.getFileNameFromPSMIdentifier(rawPSMIdentifier);
@@ -83,7 +84,7 @@ public class DTASelectPSM {
 		ionProportion = Double.parseDouble(elements[positions.get(ION_PROPORTION)]);
 		redundancy = Integer.valueOf(elements[positions.get(REDUNDANCY)]);
 
-		fullSequence = elements[positions.get(SEQUENCE)];
+		fullSequence = StaticStrings.getUniqueInstance(elements[positions.get(SEQUENCE)]);
 		sequence = new DTASelectPeptideSequence(fullSequence);
 
 		if (positions.containsKey(PROB))

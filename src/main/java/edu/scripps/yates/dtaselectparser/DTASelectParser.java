@@ -73,6 +73,8 @@ public class DTASelectParser implements Parser {
 	private String uniprotVersion;
 	private boolean ignoreNotFoundPeptidesInDB;
 	private boolean retrieveFastaIsoforms;
+	private boolean ignoreTaxonomies;
+	private boolean ignoreACCFormat;
 
 	public DTASelectParser(URL u) throws IOException {
 		this(u.getFile(), u.openStream());
@@ -256,7 +258,7 @@ public class DTASelectParser implements Parser {
 
 						}
 						// if (dbIndex == null) {
-						DTASelectProtein p = new DTASelectProtein(line, proteinHeaderPositions);
+						DTASelectProtein p = new DTASelectProtein(line, proteinHeaderPositions, ignoreACCFormat);
 						if (proteinsByAccession.containsKey(p.getAccession())) {
 							final DTASelectProtein p2 = proteinsByAccession.get(p.getAccession());
 							p = mergeProteins(p, p2);
@@ -342,7 +344,7 @@ public class DTASelectParser implements Parser {
 										if (proteinsByAccession.containsKey(indexedAccession)) {
 											protein = proteinsByAccession.get(indexedAccession);
 										} else {
-											protein = new DTASelectProtein(indexedProtein);
+											protein = new DTASelectProtein(indexedProtein, ignoreACCFormat);
 											proteinsByAccession.put(indexedAccession, protein);
 										}
 										// add the psm to the protein and
@@ -659,7 +661,9 @@ public class DTASelectParser implements Parser {
 			log.info(finalSize - initialSize
 					+ " proteins with secondary accessions were merged with the corresponding protein with primary accession");
 		}
-		log.info("Obsolete accessions from " + numObsoletes + " proteins were changed to primary ones");
+		if (numObsoletes > 0) {
+			log.info("Obsolete accessions from " + numObsoletes + " proteins were changed to primary ones");
+		}
 	}
 
 	/**
@@ -832,5 +836,21 @@ public class DTASelectParser implements Parser {
 
 	public void setRetrieveFastaIsoforms(boolean retrieveFastaIsoforms) {
 		this.retrieveFastaIsoforms = retrieveFastaIsoforms;
+	}
+
+	public boolean isIgnoreTaxonomies() {
+		return ignoreTaxonomies;
+	}
+
+	public void setIgnoreTaxonomies(boolean ignoreTaxonomies) {
+		this.ignoreTaxonomies = ignoreTaxonomies;
+	}
+
+	public void setIgnoreACCFormat(boolean ignoreACCFormat) {
+		this.ignoreACCFormat = ignoreACCFormat;
+	}
+
+	public boolean isIgnoreACCFormat() {
+		return ignoreACCFormat;
 	}
 }

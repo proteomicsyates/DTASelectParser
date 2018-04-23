@@ -36,9 +36,11 @@ public class DTASelectProtein {
 	private final List<DTASelectProteinGroup> proteinGroups = new ArrayList<DTASelectProteinGroup>();
 	private String searchEngine;
 	private String acc;
+	private final boolean ignoreACCFormat;
 
-	public DTASelectProtein(String lineToParse, TObjectIntHashMap<String> positions) {
+	public DTASelectProtein(String lineToParse, TObjectIntHashMap<String> positions, boolean ignoreACCFormat) {
 		// log.info("Creating protein from line: " + lineToParse);
+		this.ignoreACCFormat = ignoreACCFormat;
 		final String[] elements = lineToParse.split("\t");
 		id = elements[positions.get(ID)];
 		spcount = Integer.parseInt(elements[positions.get(SP_COUNT)]);
@@ -61,7 +63,8 @@ public class DTASelectProtein {
 			empai = null;
 	}
 
-	public DTASelectProtein(IndexedProtein indexedProtein) {
+	public DTASelectProtein(IndexedProtein indexedProtein, boolean ignoreACCFormat) {
+		this.ignoreACCFormat = ignoreACCFormat;
 		id = indexedProtein.getAccession();
 		description = indexedProtein.getFastaDefLine();
 		spcount = null;
@@ -278,7 +281,11 @@ public class DTASelectProtein {
 	 */
 	public String getAccession() {
 		if (acc == null) {
-			acc = FastaParser.getACC(getLocus()).getFirstelement();
+			if (ignoreACCFormat) {
+				acc = getLocus();
+			} else {
+				acc = FastaParser.getACC(getLocus()).getFirstelement();
+			}
 		}
 		return acc;
 	}

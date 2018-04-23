@@ -3,8 +3,10 @@ package edu.scripps.yates.dtaselectparser.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.scripps.yates.utilities.staticstorage.StaticStrings;
+
 public class DTASelectPeptideSequence {
-	private final StringBuffer sequence = new StringBuffer();
+	private final String sequence;
 	private char beforeSeq;
 	private char afterSeq;
 	private final List<DTASelectModification> modifications = new ArrayList<DTASelectModification>();
@@ -12,11 +14,12 @@ public class DTASelectPeptideSequence {
 	public static final char NULL_SEQ = '-';
 
 	public DTASelectPeptideSequence(String sequenceToParse) {
-		rawSequence = sequenceToParse;
-		parseSequence(sequenceToParse);
+		rawSequence = StaticStrings.getUniqueInstance(sequenceToParse);
+		sequence = StaticStrings.getUniqueInstance(parseSequence(sequenceToParse));
 	}
 
-	private void parseSequence(String sequenceToParse) {
+	private String parseSequence(String sequenceToParse) {
+		final StringBuilder sequence = new StringBuilder();
 		String betweenDots = sequenceToParse;
 		if (sequenceToParse.contains(".")) {
 			betweenDots = "";
@@ -29,12 +32,13 @@ public class DTASelectPeptideSequence {
 		int modPosition = 0;
 		int previousmod = 0;
 		while (betweenDots.contains("(") && betweenDots.contains(")")) {
-			int openParenthesis = betweenDots.indexOf("(");
+			final int openParenthesis = betweenDots.indexOf("(");
 			modPosition += openParenthesis;
-			int closeParenthesis = betweenDots.indexOf(")");
+			final int closeParenthesis = betweenDots.indexOf(")");
 			// before the open parenthesis
 			sequence.append(betweenDots.subSequence(0, openParenthesis));
-			Double modificationShift = Double.valueOf(betweenDots.substring(openParenthesis + 1, closeParenthesis));
+			final Double modificationShift = Double
+					.valueOf(betweenDots.substring(openParenthesis + 1, closeParenthesis));
 
 			final int modifiedAAPosition = openParenthesis - 1;// modPosition -
 			// 1 -
@@ -57,7 +61,7 @@ public class DTASelectPeptideSequence {
 		}
 
 		sequence.append(betweenDots);
-
+		return sequence.toString();
 	}
 
 	/**
