@@ -263,8 +263,9 @@ public class DTASelectParser implements Parser {
 							final DTASelectProtein p2 = proteinsByAccession.get(p.getAccession());
 							p = mergeProteins(p, p2);
 						}
-						if (!searchEngines.isEmpty())
+						if (!searchEngines.isEmpty()) {
 							p.setSearchEngine(searchEngines.iterator().next());
+						}
 						boolean skip = false;
 						if (decoyPattern != null) {
 							final Matcher matcher = decoyPattern.matcher(p.getLocus());
