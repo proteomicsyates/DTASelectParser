@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import edu.scripps.yates.annotations.uniprot.UniprotProteinLocalRetriever;
 import edu.scripps.yates.annotations.uniprot.xml.Entry;
 import edu.scripps.yates.dbindex.DBIndexInterface;
+import edu.scripps.yates.dbindex.DBIndexStoreException;
 import edu.scripps.yates.dbindex.IndexedProtein;
 import edu.scripps.yates.dbindex.util.PeptideNotFoundInDBIndexException;
 import edu.scripps.yates.dtaselectparser.util.DTASelectPSM;
@@ -376,10 +377,14 @@ public class DTASelectParser implements Parser {
 					log.info(dtaSelectProteinGroups.size() + " proteins groups read in " + fs.size()
 							+ " DTASelect file(s).");
 				}
-			} catch (final Exception e) {
+			} catch (final IOException e) {
 				e.printStackTrace();
 				log.error(e.getMessage());
 				throw e;
+			} catch (final DBIndexStoreException e) {
+				e.printStackTrace();
+				log.error(e.getMessage());
+				throw new IOException(e);
 			} finally {
 				log.info(numDecoy + " proteins discarded as decoy.");
 				try {
