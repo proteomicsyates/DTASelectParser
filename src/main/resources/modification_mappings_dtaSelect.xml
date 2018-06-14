@@ -755,7 +755,7 @@
 				<unimod_mapping id="267"/>
 			</unimod_mappings>
 			<psi_modifications>
-				<psi_modification id="MOD:00587" title="13C(6) 15N(4) Silac label" general_modification="1" specific_modification="0" origin="R" term_spec="none" obsolete="0"/>
+				<psi_modification id="MOD:00587" title="Label:13C(6)15N(4)" general_modification="1" specific_modification="0" origin="R" term_spec="none" obsolete="0"/>
 			</psi_modifications>
 		</pride_modification>
 		<pride_modification title="Label:13C(6)15N(2)" id="46" diff_mono="8.014199" biological_significance="0">
@@ -763,16 +763,34 @@
 				<unimod_mapping id="259"/>
 			</unimod_mappings>
 			<psi_modifications>
-				<psi_modification id="MOD:00582" title="13C(6) 15N(2) Silac label" general_modification="1" specific_modification="0" origin="K" term_spec="none" obsolete="0"/>
+				<psi_modification id="MOD:00582" title="Label:13C(6)15N(2)" general_modification="1" specific_modification="0" origin="K" term_spec="none" obsolete="0"/>
 			</psi_modifications>
 		</pride_modification>	
 		<!-- added by Salva on 9/15/2017 for supporting ubiquitinmodification -->
-		<pride_modification title="ubiquitinylation lysine" id="47" diff_mono="114.042927" biological_significance="0">
+		<pride_modification title="ubiquitinylation residue" id="47" diff_mono="114.042927" biological_significance="0">
 			<unimod_mappings>
 				<unimod_mapping id="121"/>
 			</unimod_mappings>
 			<psi_modifications>
-				<psi_modification id="MOD:01148" title="ubiquitinylation lysine" general_modification="1" specific_modification="0" origin="K" term_spec="none" obsolete="0"/>
+				<psi_modification id="MOD:01148" title="ubiquitinylation lysine" general_modification="1" specific_modification="0" origin="L" term_spec="none" obsolete="0"/>
+			</psi_modifications>
+		</pride_modification>
+		<!-- added by Salva on 6/14/2018 for supporting Nethylmaleimide -->
+		<pride_modification title="N-ethylmaleimide on cysteines" id="48" diff_mono="125.047679" biological_significance="0">
+			<unimod_mappings>
+				<unimod_mapping id="108"/>
+			</unimod_mappings>
+			<psi_modifications>
+				<psi_modification id="MOD:00483" title="Nethylmaleimide" general_modification="1" specific_modification="0" origin="C" term_spec="none" obsolete="0"/>
+			</psi_modifications>
+		</pride_modification>
+		<!-- added by Salva on 6/14/2018 for supporting Trioxidation -->
+		<pride_modification title="cysteine oxidation to cysteic acid" id="48" diff_mono="47.984744" biological_significance="0">
+			<unimod_mappings>
+				<unimod_mapping id="345"/>
+			</unimod_mappings>
+			<psi_modifications>
+				<psi_modification id="MOD:00406" title="Trioxidation" general_modification="1" specific_modification="0" origin="C" term_spec="none" obsolete="0"/>
 			</psi_modifications>
 		</pride_modification>
 	</pride_modifications>
