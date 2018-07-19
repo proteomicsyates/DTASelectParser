@@ -601,6 +601,8 @@ public class DTASelectParser implements Parser {
 		for (final DTASelectProtein protein : dtaSelectProteins.values()) {
 			final String accession = FastaParser.getACC(protein.getLocus()).getFirstelement();
 			accessions.add(accession);
+			// just in case the accession has changed:
+			dtaSelectProteins.put(accession, protein);
 		}
 		String latestVersion = "latestVersion";
 		if (uniprotVersion != null) {
