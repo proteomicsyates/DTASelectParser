@@ -570,8 +570,6 @@ public class DTASelectParser implements Parser {
 	}
 
 	public String getDecoyPattern() throws IOException {
-		if (!processed)
-			startProcess();
 
 		if (decoyPattern != null) {
 			return decoyPattern.toString();
