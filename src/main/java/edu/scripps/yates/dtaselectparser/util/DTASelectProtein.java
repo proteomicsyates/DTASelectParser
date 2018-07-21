@@ -66,6 +66,10 @@ public class DTASelectProtein {
 	public DTASelectProtein(IndexedProtein indexedProtein, boolean ignoreACCFormat) {
 		this.ignoreACCFormat = ignoreACCFormat;
 		id = indexedProtein.getAccession();
+		if (id.equals("P08107")) {
+			System.out.println(this);
+		}
+
 		description = indexedProtein.getFastaDefLine();
 		spcount = null;
 		coverage = -1;
@@ -136,6 +140,8 @@ public class DTASelectProtein {
 
 	public void setLocus(String locus) {
 		id = locus;
+		// set acc to null, since it is a value derived from id
+		acc = null;
 	}
 
 	/**
@@ -255,7 +261,12 @@ public class DTASelectProtein {
 			proteinGroups.addAll(protein.getProteinGroups());
 		}
 		if (!protein.getPSMs().isEmpty()) {
-			psms.addAll(protein.getPSMs());
+			for (final DTASelectPSM psm : protein.getPSMs()) {
+				addPSM(psm);
+				psm.getProteins().remove(protein);
+				psm.getProteins().add(this);
+			}
+
 		}
 		if (spcount == null) {
 			spcount = protein.getSpectrumCount();
