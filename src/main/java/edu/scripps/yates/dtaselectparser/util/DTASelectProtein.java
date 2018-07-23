@@ -66,9 +66,6 @@ public class DTASelectProtein {
 	public DTASelectProtein(IndexedProtein indexedProtein, boolean ignoreACCFormat) {
 		this.ignoreACCFormat = ignoreACCFormat;
 		id = indexedProtein.getAccession();
-		if (id.equals("P08107")) {
-			System.out.println(this);
-		}
 
 		description = indexedProtein.getFastaDefLine();
 		spcount = null;
