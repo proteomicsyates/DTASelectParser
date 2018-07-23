@@ -251,7 +251,7 @@ public class DTASelectParser implements Parser {
 						// log.info(line);
 						// if comes from a psm line, clear the current group of
 						// proteins
-						if (isPsm && dbIndex == null) {
+						if (isPsm) {
 							dtaSelectProteinGroups.add(currentProteinGroup);
 
 							// restart the protein group
@@ -294,6 +294,7 @@ public class DTASelectParser implements Parser {
 							psm = psmTableByPSMID.get(psmID);
 						} else {
 							psm = new DTASelectPSM(line, psmHeaderPositions, runPath);
+
 							if (!searchEngines.isEmpty()) {
 								psm.setSearchEngine(searchEngines.iterator().next());
 							}
@@ -858,5 +859,13 @@ public class DTASelectParser implements Parser {
 
 	public boolean isIgnoreACCFormat() {
 		return ignoreACCFormat;
+	}
+
+	public UniprotProteinLocalRetriever getUniprotProteinLocalRetriever() {
+		return uplr;
+	}
+
+	public String getUniprotVersion() {
+		return uniprotVersion;
 	}
 }
