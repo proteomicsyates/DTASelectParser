@@ -310,4 +310,9 @@ public class DTASelectPSM {
 	public Double getRTInMin() {
 		return rtInMinutes;
 	}
+
+	@Override
+	public String toString() {
+		return getPsmIdentifier();
+	}
 }
