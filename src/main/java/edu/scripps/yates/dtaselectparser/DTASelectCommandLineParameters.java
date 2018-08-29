@@ -13,6 +13,25 @@ import gnu.trove.map.hash.THashMap;
  */
 public class DTASelectCommandLineParameters {
 
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for (String key : parameters.keySet()) {
+			String value = "";
+			if (parameters.get(key) != null) {
+				value = parameters.get(key);
+			}
+			if (!"".equals(sb.toString())) {
+				sb.append(" ");
+			}
+			sb.append(key);
+			if (!"".equals(value)) {
+				sb.append(" " + value);
+			}
+		}
+		return sb.toString();
+	}
+
 	private final Map<String, String> parameters = new THashMap<String, String>();
 
 	public DTASelectCommandLineParameters(String commandLineParameters) {
