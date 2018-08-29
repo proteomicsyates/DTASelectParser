@@ -76,6 +76,7 @@ public class DTASelectParser implements Parser {
 	private boolean retrieveFastaIsoforms;
 	private boolean ignoreTaxonomies;
 	private boolean ignoreACCFormat;
+	private boolean onlyReadParameters = false;
 
 	public DTASelectParser(URL u) throws IOException {
 		this(u.getFile(), u.openStream());
@@ -181,6 +182,9 @@ public class DTASelectParser implements Parser {
 							&& !line.startsWith("Locus")) {
 						commandLineParameterStrings.add(line);
 						commandLineParameter = new DTASelectCommandLineParameters(line);
+						if (onlyReadParameters) {
+							return;
+						}
 					} else if (line.startsWith("DTASelect")) {
 						// DTASelectProtein p = new DTASelectProtein("DTA", 0,
 						// 0, 0,
@@ -867,5 +871,13 @@ public class DTASelectParser implements Parser {
 
 	public String getUniprotVersion() {
 		return uniprotVersion;
+	}
+
+	public boolean isOnlyReadParameters() {
+		return onlyReadParameters;
+	}
+
+	public void setOnlyReadParameters(boolean onlyReadParameters) {
+		this.onlyReadParameters = onlyReadParameters;
 	}
 }
