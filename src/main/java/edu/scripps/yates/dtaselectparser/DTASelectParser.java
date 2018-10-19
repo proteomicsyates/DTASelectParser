@@ -77,6 +77,7 @@ public class DTASelectParser implements Parser {
 	private boolean ignoreTaxonomies;
 	private boolean ignoreACCFormat;
 	private boolean onlyReadParameters = false;
+	private boolean onlyReadProteins;
 
 	public DTASelectParser(URL u) throws IOException {
 		this(u.getFile(), u.openStream());
@@ -291,6 +292,9 @@ public class DTASelectParser implements Parser {
 
 						// this is the case of a psm
 						isPsm = true;
+						if (onlyReadProteins) {
+							continue;
+						}
 						final String psmID = getPSMIdentifier(line, psmHeaderPositions);
 						psmIds.add(psmID);
 						DTASelectPSM psm;
@@ -879,5 +883,13 @@ public class DTASelectParser implements Parser {
 
 	public void setOnlyReadParameters(boolean onlyReadParameters) {
 		this.onlyReadParameters = onlyReadParameters;
+	}
+
+	public void setOnlyReadProteins(boolean onlyReadProteins) {
+		this.onlyReadProteins = onlyReadProteins;
+	}
+
+	public boolean isOnlyReadProteins() {
+		return onlyReadProteins;
 	}
 }
