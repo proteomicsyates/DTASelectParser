@@ -25,7 +25,7 @@ import edu.scripps.yates.dtaselectparser.util.DTASelectProteinGroup;
 import edu.scripps.yates.utilities.fasta.FastaParser;
 import edu.scripps.yates.utilities.fasta.dbindex.DBIndexStoreException;
 import edu.scripps.yates.utilities.fasta.dbindex.IndexedProtein;
-import edu.scripps.yates.utilities.files.IdentificationsParser;
+import edu.scripps.yates.utilities.parsers.idparser.IdentificationsParser;
 import edu.scripps.yates.utilities.remote.RemoteSSHFileReference;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import gnu.trove.set.hash.THashSet;

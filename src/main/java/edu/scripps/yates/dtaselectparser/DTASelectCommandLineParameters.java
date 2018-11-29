@@ -2,7 +2,7 @@ package edu.scripps.yates.dtaselectparser;
 
 import java.util.Map;
 
-import edu.scripps.yates.utilities.CommandLineParameters;
+import edu.scripps.yates.utilities.parsers.idparser.CommandLineParameters;
 import gnu.trove.map.hash.THashMap;
 
 /**
