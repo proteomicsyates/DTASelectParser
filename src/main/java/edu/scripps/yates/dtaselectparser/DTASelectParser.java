@@ -11,73 +11,31 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
-import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 
-import edu.scripps.yates.annotations.uniprot.UniprotProteinLocalRetriever;
-import edu.scripps.yates.annotations.uniprot.xml.Entry;
-import edu.scripps.yates.dbindex.DBIndexInterface;
-import edu.scripps.yates.dbindex.DBIndexStoreException;
-import edu.scripps.yates.dbindex.IndexedProtein;
 import edu.scripps.yates.dbindex.util.PeptideNotFoundInDBIndexException;
 import edu.scripps.yates.dtaselectparser.util.DTASelectPSM;
 import edu.scripps.yates.dtaselectparser.util.DTASelectProtein;
 import edu.scripps.yates.dtaselectparser.util.DTASelectProteinGroup;
 import edu.scripps.yates.utilities.fasta.FastaParser;
-import edu.scripps.yates.utilities.files.FileUtils;
-import edu.scripps.yates.utilities.files.Parser;
-import edu.scripps.yates.utilities.ipi.IPI2UniprotACCMap;
-import edu.scripps.yates.utilities.model.enums.AccessionType;
-import edu.scripps.yates.utilities.model.factories.AccessionEx;
-import edu.scripps.yates.utilities.progresscounter.ProgressCounter;
-import edu.scripps.yates.utilities.progresscounter.ProgressPrintingType;
-import edu.scripps.yates.utilities.proteomicsmodel.Accession;
+import edu.scripps.yates.utilities.fasta.dbindex.DBIndexStoreException;
+import edu.scripps.yates.utilities.fasta.dbindex.IndexedProtein;
+import edu.scripps.yates.utilities.files.IdentificationsParser;
 import edu.scripps.yates.utilities.remote.RemoteSSHFileReference;
-import edu.scripps.yates.utilities.util.Pair;
-import gnu.trove.map.hash.THashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import gnu.trove.set.hash.THashSet;
 
-public class DTASelectParser implements Parser {
+public class DTASelectParser extends IdentificationsParser<DTASelectProteinGroup, DTASelectProtein, DTASelectPSM> {
 	private static final Logger log = Logger.getLogger(DTASelectParser.class);
-	private final Map<String, DTASelectProtein> proteinsByAccession = new THashMap<String, DTASelectProtein>();
-	private final Map<String, DTASelectPSM> psmTableByPSMID = new THashMap<String, DTASelectPSM>();
 
-	private final Map<String, Set<DTASelectPSM>> psmTableByFullSequence = new THashMap<String, Set<DTASelectPSM>>();
-	private final Set<DTASelectProteinGroup> dtaSelectProteinGroups = new THashSet<DTASelectProteinGroup>();
-	private final List<String> keys = new ArrayList<String>();
 	public static final String PROLUCID = "ProLuCID";
 	public static final String SEQUEST = "Sequest";
 	private static final String UNKNOWN = "Unknown";
-	private String runPath;
-	private DBIndexInterface dbIndex;
-	private boolean processed = false;
-	private final Map<String, InputStream> fs;
-	private Pattern decoyPattern;
-	private final List<String> commandLineParameterStrings = new ArrayList<String>();
-	private final Set<String> searchEngines = new THashSet<String>();
-	private DTASelectCommandLineParameters commandLineParameter;
-	private String searchEngineVersion;
-	private String fastaPath;
-	private final Set<String> spectraFileNames = new THashSet<String>();
-	private String dtaSelectVersion;
-	private final Set<String> spectraFileFullPaths = new THashSet<String>();
-	private UniprotProteinLocalRetriever uplr;
-	private String uniprotVersion;
-	private boolean ignoreNotFoundPeptidesInDB;
-	private boolean retrieveFastaIsoforms;
-	private boolean ignoreTaxonomies;
-	private boolean ignoreACCFormat;
-	private boolean onlyReadParameters = false;
-	private boolean onlyReadProteins;
 
 	public DTASelectParser(URL u) throws IOException {
 		this(u.getFile(), u.openStream());
@@ -88,41 +46,27 @@ public class DTASelectParser implements Parser {
 	}
 
 	public DTASelectParser(Map<String, RemoteSSHFileReference> s) throws FileNotFoundException {
-		fs = new THashMap<String, InputStream>();
-		for (final String key : s.keySet()) {
-			final RemoteSSHFileReference server = s.get(key);
-			// final File remoteFile = server.getRemoteFile();
-			fs.put(key, server.getRemoteInputStream());
-		}
+		super(s);
 
 	}
 
 	public DTASelectParser(List<File> s) throws FileNotFoundException {
-		fs = new THashMap<String, InputStream>();
-		for (final File remoteFile : s) {
-			fs.put(remoteFile.getAbsolutePath(), FileUtils.getInputStream(remoteFile));
-		}
+		super(s);
 
 	}
 
 	public DTASelectParser(File file) throws FileNotFoundException {
-		log.debug("Beggining of constructor with file " + file.getAbsolutePath());
-		fs = new THashMap<String, InputStream>();
-		fs.put(file.getAbsolutePath(), FileUtils.getInputStream(file));
-		log.debug("end of constructor");
+		super(file);
+
 	}
 
 	public DTASelectParser(String runId, InputStream f) {
-		fs = new THashMap<String, InputStream>();
-		fs.put(runId, f);
+		super(runId, f);
 
 	}
 
-	private void process() throws IOException {
-		process(false);
-	}
-
-	private void process(boolean checkFormat) throws IOException {
+	@Override
+	protected void process(boolean checkFormat) throws IOException {
 		final Set<String> psmIds = new THashSet<String>();
 
 		DTASelectProteinGroup currentProteinGroup = null;
@@ -282,7 +226,6 @@ public class DTASelectParser implements Parser {
 						}
 						if (!skip) {
 							proteinsByAccession.put(p.getAccession(), p);
-							keys.add(p.getAccession());
 							currentProteinGroup.add(p);
 						}
 						// }
@@ -350,7 +293,6 @@ public class DTASelectParser implements Parser {
 												continue;
 											}
 										}
-										keys.add(indexedAccession);
 										DTASelectProtein protein = null;
 										if (proteinsByAccession.containsKey(indexedAccession)) {
 											protein = proteinsByAccession.get(indexedAccession);
@@ -414,25 +356,14 @@ public class DTASelectParser implements Parser {
 
 	}
 
-	private DTASelectProtein mergeProteins(DTASelectProtein destination, DTASelectProtein origin) {
+	@Override
+	protected DTASelectProtein mergeProteins(DTASelectProtein destination, DTASelectProtein origin) {
 		if (destination == null)
 			return null;
 
 		destination.mergeWithProtein(origin);
 
 		return destination;
-	}
-
-	private void addToPSMTable(DTASelectPSM psm) {
-		final String psmKey = psm.getFullSequence();
-		if (psmTableByFullSequence.containsKey(psmKey)) {
-			psmTableByFullSequence.get(psmKey).add(psm);
-		} else {
-			final Set<DTASelectPSM> set = new THashSet<DTASelectPSM>();
-			set.add(psm);
-			psmTableByFullSequence.put(psmKey, set);
-		}
-
 	}
 
 	/**
@@ -458,292 +389,8 @@ public class DTASelectParser implements Parser {
 		return fileName + "-" + scan + "-" + charge + "-" + fullSequence;
 	}
 
-	public Map<String, DTASelectProtein> getDTASelectProteins() throws IOException {
-		if (!processed)
-			startProcess();
-
-		return proteinsByAccession;
-	}
-
-	public Set<DTASelectProteinGroup> getProteinGroups() throws IOException {
-		if (dbIndex != null)
-			throw new IllegalArgumentException(
-					"Reading proteins with a FASTA database, will not result in Protein groups");
-		if (!processed)
-			startProcess();
-		return dtaSelectProteinGroups;
-	}
-
-	public Map<String, DTASelectPSM> getDTASelectPSMsByPSMID() throws IOException {
-		if (!processed)
-			startProcess();
-		return psmTableByPSMID;
-	}
-
-	public Map<String, Set<DTASelectPSM>> getDTASelectPSMsByFullSequence() throws IOException {
-		if (!processed)
-			startProcess();
-		return psmTableByFullSequence;
-	}
-
-	private boolean isNumeric(String string) {
-		return NumberUtils.isNumber(string);
-
-	}
-
-	/**
-	 * @param dbIndex
-	 *            the dbIndex to set
-	 */
-	public void setDbIndex(DBIndexInterface dbIndex) {
-		this.dbIndex = dbIndex;
-	}
-
-	public void setDecoyPattern(String patternString) throws PatternSyntaxException {
-		if (patternString != null) {
-			decoyPattern = Pattern.compile(patternString);
-		}
-	}
-
-	/**
-	 * @return the runPath
-	 * @throws IOException
-	 */
-	public String getRunPath() throws IOException {
-		if (!processed)
-			startProcess();
-		return runPath;
-	}
-
-	/**
-	 * @return the commandLineParameterStrings
-	 * @throws IOException
-	 */
-	public List<String> getCommandLineParameterStrings() throws IOException {
-		if (!processed)
-			startProcess();
-		return commandLineParameterStrings;
-	}
-
-	/**
-	 * @return the searchEngines
-	 * @throws IOException
-	 */
-	public Set<String> getSearchEngines() throws IOException {
-		if (!processed)
-			startProcess();
-		return searchEngines;
-	}
-
-	/**
-	 * @return the commandLineParameter
-	 * @throws IOException
-	 */
-	public DTASelectCommandLineParameters getCommandLineParameter() throws IOException {
-		if (!processed)
-			startProcess();
-		return commandLineParameter;
-	}
-
-	/**
-	 * @return the searchEngineVersion
-	 * @throws IOException
-	 */
-	public String getSearchEngineVersion() throws IOException {
-		if (!processed)
-			startProcess();
-
-		return searchEngineVersion;
-	}
-
-	/**
-	 * @param searchEngineVersion
-	 *            the searchEngineVersion to set
-	 */
-	public void setSearchEngineVersion(String searchEngineVersion) {
-		this.searchEngineVersion = searchEngineVersion;
-	}
-
-	public String getFastaPath() throws IOException {
-		if (!processed)
-			startProcess();
-
-		return fastaPath;
-	}
-
-	public Set<String> getSpectraFileNames() throws IOException {
-		if (!processed)
-			startProcess();
-
-		return spectraFileNames;
-	}
-
-	public String getDecoyPattern() throws IOException {
-
-		if (decoyPattern != null) {
-			return decoyPattern.toString();
-		}
-		return null;
-	}
-
-	public String getDTASelectVersion() throws IOException {
-		if (!processed)
-			startProcess();
-
-		return dtaSelectVersion;
-	}
-
-	public Set<String> getSpectraFileFullPaths() throws IOException {
-		if (!processed)
-			startProcess();
-		return spectraFileFullPaths;
-	}
-
-	private void mergeProteinsWithSecondaryAccessionsInParser() throws IOException {
-		if (uplr == null) {
-			return;
-		}
-		final Set<String> accessions = new THashSet<String>();
-		final Map<String, DTASelectProtein> dtaSelectProteins = getDTASelectProteins();
-		for (final DTASelectProtein protein : dtaSelectProteins.values()) {
-			final String accession = FastaParser.getACC(protein.getLocus()).getFirstelement();
-			accessions.add(accession);
-			// just in case the accession has changed:
-			dtaSelectProteins.put(accession, protein);
-		}
-		String latestVersion = "latestVersion";
-		if (uniprotVersion != null) {
-			latestVersion = "version " + uniprotVersion;
-		}
-		// split into chunks of 500 accessions in order to show progress
-		final int chunckSize = 500;
-		final List<Set<String>> listOfSets = new ArrayList<Set<String>>();
-		Set<String> set = new THashSet<String>();
-		for (final String accession : accessions) {
-			set.add(accession);
-			if (set.size() == chunckSize) {
-				listOfSets.add(set);
-				set = new THashSet<String>();
-			}
-		}
-		listOfSets.add(set);
-
-		int numObsoletes = 0;
-		log.info("Merging proteins that have secondary accessions according to Uniprot " + latestVersion + "...");
-
-		final int initialSize = accessions.size();
-		final ProgressCounter counter = new ProgressCounter(initialSize, ProgressPrintingType.PERCENTAGE_STEPS, 0);
-		for (final Set<String> accessionSet : listOfSets) {
-			final Map<String, Entry> annotatedProteins = uplr.getAnnotatedProteins(uniprotVersion, accessionSet,
-					retrieveFastaIsoforms);
-			for (final String accession : accessionSet) {
-				counter.increment();
-				final String progress = counter.printIfNecessary();
-				if (!"".contentEquals(progress)) {
-					log.info(progress);
-				}
-				final DTASelectProtein protein = dtaSelectProteins.get(accession);
-				final Entry entry = annotatedProteins.get(accession);
-				if (entry != null && entry.getAccession() != null && !entry.getAccession().isEmpty()) {
-					final String primaryAccession = entry.getAccession().get(0);
-					if (!accession.equals(primaryAccession) && !accession.contains(primaryAccession)) {
-						log.info("Replacing Uniprot accession " + accession + " by " + primaryAccession);
-						protein.setLocus(primaryAccession);
-						if (dtaSelectProteins.containsKey(primaryAccession)) {
-							// there was already a protein with that
-							// primaryAccession
-							final DTASelectProtein quantifiedProtein2 = dtaSelectProteins.get(primaryAccession);
-							// merge quantifiedPRotein and quantifiedPRotein2
-							mergeProteins(protein, quantifiedProtein2);
-
-						} else {
-							numObsoletes++;
-						}
-						// remove old/secondary accession
-						dtaSelectProteins.remove(accession);
-						dtaSelectProteins.put(primaryAccession, protein);
-
-					}
-				} else {
-					// // remove the protein because is obsolete
-					// log.info(quantifiedProtein.getAccession());
-					// parser.getProteinMap().remove(accession);
-				}
-			}
-		}
-		final int finalSize = dtaSelectProteins.size();
-		if (initialSize != finalSize) {
-			log.info(finalSize - initialSize
-					+ " proteins with secondary accessions were merged with the corresponding protein with primary accession");
-		}
-		if (numObsoletes > 0) {
-			log.info("Obsolete accessions from " + numObsoletes + " proteins were changed to primary ones");
-		}
-	}
-
-	/**
-	 * To be called after process().<br>
-	 * If proteins have IPI accessions, look for the mapping from IPI 2 Uniprot.
-	 * It adds new entries to the map, but it doesn't create any new
-	 * {@link QuantifiedProteinInterface}
-	 */
-	private void mapIPI2Uniprot() {
-		if (!proteinsByAccession.isEmpty()) {
-			final int originalNumberOfEntries = proteinsByAccession.size();
-			final Map<String, DTASelectProtein> newMap = new THashMap<String, DTASelectProtein>();
-			for (final String accession : proteinsByAccession.keySet()) {
-
-				final Pair<String, String> acc = FastaParser.getACC(accession);
-				if (acc.getSecondElement().equals("IPI")) {
-					final DTASelectProtein protein = proteinsByAccession.get(accession);
-					Accession primaryAccession = new AccessionEx(accession, AccessionType.IPI);
-					final Pair<Accession, Set<Accession>> pair = IPI2UniprotACCMap.getInstance()
-							.getPrimaryAndSecondaryAccessionsFromIPI(primaryAccession);
-					if (pair.getFirstelement() != null) {
-						primaryAccession = pair.getFirstelement();
-						if (!newMap.containsKey(primaryAccession)) {
-							newMap.put(primaryAccession.getAccession(), protein);
-						}
-					}
-					final Set<Accession> secondaryAccs = pair.getSecondElement();
-					if (secondaryAccs != null) {
-						for (final Accession secondaryAcc : secondaryAccs) {
-							if (!newMap.containsKey(secondaryAcc.getAccession())) {
-								newMap.put(secondaryAcc.getAccession(), protein);
-							}
-						}
-
-					}
-				}
-			}
-			for (final String acc : newMap.keySet()) {
-				if (!proteinsByAccession.containsKey(acc)) {
-					proteinsByAccession.put(acc, newMap.get(acc));
-				}
-			}
-			if (originalNumberOfEntries != proteinsByAccession.size()) {
-				log.info("Protein Map expanded from " + originalNumberOfEntries + " to " + proteinsByAccession.size());
-			}
-		}
-	}
-
-	private void startProcess() throws IOException {
-		// first process
-		process();
-		// remove psms assigned to decoy proteins that were discarded
-		removeDecoyPSMs();
-		// second expand protein map
-		mapIPI2Uniprot();
-		// third merge proteins with secondary accessions
-		mergeProteinsWithSecondaryAccessionsInParser();
-
-		log.info(proteinsByAccession.size() + " proteins read in " + fs.size() + " DTASelect file(s).");
-		log.info(psmTableByFullSequence.size() + " peptides read in " + fs.size() + " DTASelect file(s).");
-		log.info(psmTableByPSMID.size() + " psms read in " + fs.size() + " DTASelect file(s).");
-
-	}
-
-	private void removeDecoyPSMs() {
+	@Override
+	protected void removeDecoyPSMs() {
 		if (decoyPattern != null) {
 			// in case of decoyPattern is enabled, we may have some PSMs
 			// assigned to
@@ -780,116 +427,19 @@ public class DTASelectParser implements Parser {
 		}
 	}
 
-	/**
-	 * @return the ignoreNotFoundPeptidesInDB
-	 */
-	public boolean isIgnoreNotFoundPeptidesInDB() {
-		return ignoreNotFoundPeptidesInDB;
-	}
-
-	/**
-	 * @param ignoreNotFoundPeptidesInDB
-	 *            the ignoreNotFoundPeptidesInDB to set
-	 */
-	public void setIgnoreNotFoundPeptidesInDB(boolean ignoreNotFoundPeptidesInDB) {
-		this.ignoreNotFoundPeptidesInDB = ignoreNotFoundPeptidesInDB;
-	}
-
-	public void enableProteinMergingBySecondaryAccessions(UniprotProteinLocalRetriever uplr, String uniprotVersion) {
-		this.uplr = uplr;
-		this.uniprotVersion = uniprotVersion;
-	}
-
-	public Set<String> getInputFilePathes() {
-		return fs.keySet();
-	}
-
-	public DBIndexInterface getDBIndex() {
-		return dbIndex;
-	}
-
-	public Set<String> getUniprotAccSet() {
-		final Set<String> ret = new THashSet<String>();
-		try {
-			final Set<String> keySet = getDTASelectProteins().keySet();
-			for (final String acc : keySet) {
-				final String uniProtACC = FastaParser.getUniProtACC(acc);
-				if (uniProtACC != null) {
-					ret.add(uniProtACC);
-				}
-			}
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-
-		return ret;
+	@Override
+	protected String getPSMKey(DTASelectPSM psm) {
+		return psm.getFullSequence();
 	}
 
 	@Override
-	public boolean canRead(File file) {
-		try {
-			fs.put("TMP***", FileUtils.getInputStream(file));
-			if (!processed) {
-				process(true);
-			}
-			if (!proteinsByAccession.isEmpty()) {
-				if (!psmTableByPSMID.isEmpty()) {
-					return true;
-				}
-			}
-			return false;
-		} catch (final Exception e) {
-			return false;
-		} finally {
-			fs.remove("TMP***");
-		}
+	public String getProteinAcc(DTASelectProtein protein) {
+		return protein.getLocus();
 	}
 
-	public boolean isRetrieveFastaIsoforms() {
-		return retrieveFastaIsoforms;
+	@Override
+	protected void setPrimaryAccession(String primaryAccession, DTASelectProtein protein) {
+		protein.setLocus(primaryAccession);
 	}
 
-	public void setRetrieveFastaIsoforms(boolean retrieveFastaIsoforms) {
-		this.retrieveFastaIsoforms = retrieveFastaIsoforms;
-	}
-
-	public boolean isIgnoreTaxonomies() {
-		return ignoreTaxonomies;
-	}
-
-	public void setIgnoreTaxonomies(boolean ignoreTaxonomies) {
-		this.ignoreTaxonomies = ignoreTaxonomies;
-	}
-
-	public void setIgnoreACCFormat(boolean ignoreACCFormat) {
-		this.ignoreACCFormat = ignoreACCFormat;
-	}
-
-	public boolean isIgnoreACCFormat() {
-		return ignoreACCFormat;
-	}
-
-	public UniprotProteinLocalRetriever getUniprotProteinLocalRetriever() {
-		return uplr;
-	}
-
-	public String getUniprotVersion() {
-		return uniprotVersion;
-	}
-
-	public boolean isOnlyReadParameters() {
-		return onlyReadParameters;
-	}
-
-	public void setOnlyReadParameters(boolean onlyReadParameters) {
-		this.onlyReadParameters = onlyReadParameters;
-	}
-
-	public void setOnlyReadProteins(boolean onlyReadProteins) {
-		this.onlyReadProteins = onlyReadProteins;
-	}
-
-	public boolean isOnlyReadProteins() {
-		return onlyReadProteins;
-	}
 }

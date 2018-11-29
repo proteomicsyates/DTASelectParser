@@ -2,6 +2,7 @@ package edu.scripps.yates.dtaselectparser;
 
 import java.util.Map;
 
+import edu.scripps.yates.utilities.CommandLineParameters;
 import gnu.trove.map.hash.THashMap;
 
 /**
@@ -11,12 +12,12 @@ import gnu.trove.map.hash.THashMap;
  * @author Salva
  * 
  */
-public class DTASelectCommandLineParameters {
+public class DTASelectCommandLineParameters implements CommandLineParameters {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		for (String key : parameters.keySet()) {
+		final StringBuilder sb = new StringBuilder();
+		for (final String key : parameters.keySet()) {
 			String value = "";
 			if (parameters.get(key) != null) {
 				value = parameters.get(key);
@@ -39,7 +40,7 @@ public class DTASelectCommandLineParameters {
 
 		String parameter = null;
 		String value = null;
-		for (String string : split) {
+		for (final String string : split) {
 			if (string.startsWith("-")) {
 				if (parameter != null) {
 					parameters.put(parameter, null);
@@ -64,6 +65,7 @@ public class DTASelectCommandLineParameters {
 	/**
 	 * @return the parameters
 	 */
+	@Override
 	public Map<String, String> getParametersMap() {
 		return parameters;
 	}
@@ -73,7 +75,7 @@ public class DTASelectCommandLineParameters {
 		DTASelectCommandLineParameters d = new DTASelectCommandLineParameters(paramString);
 		System.out.println(paramString);
 		Map<String, String> parameters2 = d.getParametersMap();
-		for (String param : parameters2.keySet()) {
+		for (final String param : parameters2.keySet()) {
 			System.out.println(param + "\t" + parameters2.get(param));
 		}
 
@@ -84,7 +86,7 @@ public class DTASelectCommandLineParameters {
 		d = new DTASelectCommandLineParameters(paramString);
 		System.out.println(paramString);
 		parameters2 = d.getParametersMap();
-		for (String param : parameters2.keySet()) {
+		for (final String param : parameters2.keySet()) {
 			System.out.println(param + "\t" + parameters2.get(param));
 		}
 
@@ -99,12 +101,13 @@ public class DTASelectCommandLineParameters {
 	 * @param parameterName
 	 * @return
 	 */
+	@Override
 	public String getParameterValue(String parameterName) {
 		if (parameters.containsKey(parameterName)) {
 			return parameters.get(parameterName);
 		} else {
-			for (String parameter : parameters.keySet()) {
-				String parameterWithoutDash = parameter.replace("-", "");
+			for (final String parameter : parameters.keySet()) {
+				final String parameterWithoutDash = parameter.replace("-", "");
 				if (parameterWithoutDash.equals(parameterName))
 					return parameters.get(parameter);
 			}
