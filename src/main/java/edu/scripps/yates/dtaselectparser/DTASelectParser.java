@@ -21,16 +21,17 @@ import org.apache.log4j.Logger;
 import edu.scripps.yates.dbindex.util.PeptideNotFoundInDBIndexException;
 import edu.scripps.yates.dtaselectparser.util.DTASelectPSM;
 import edu.scripps.yates.dtaselectparser.util.DTASelectProtein;
-import edu.scripps.yates.dtaselectparser.util.DTASelectProteinGroup;
 import edu.scripps.yates.utilities.fasta.FastaParser;
 import edu.scripps.yates.utilities.fasta.dbindex.DBIndexStoreException;
 import edu.scripps.yates.utilities.fasta.dbindex.IndexedProtein;
 import edu.scripps.yates.utilities.parsers.idparser.IdentificationsParser;
+import edu.scripps.yates.utilities.parsers.idparser.IdentifiedProteinGroup;
+import edu.scripps.yates.utilities.parsers.idparser.IdentifiedProteinInterface;
 import edu.scripps.yates.utilities.remote.RemoteSSHFileReference;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import gnu.trove.set.hash.THashSet;
 
-public class DTASelectParser extends IdentificationsParser<DTASelectProteinGroup, DTASelectProtein, DTASelectPSM> {
+public class DTASelectParser extends IdentificationsParser<IdentifiedProteinGroup, DTASelectProtein, DTASelectPSM> {
 	private static final Logger log = Logger.getLogger(DTASelectParser.class);
 
 	public static final String PROLUCID = "ProLuCID";
@@ -69,7 +70,7 @@ public class DTASelectParser extends IdentificationsParser<DTASelectProteinGroup
 	protected void process(boolean checkFormat) throws IOException {
 		final Set<String> psmIds = new THashSet<String>();
 
-		DTASelectProteinGroup currentProteinGroup = null;
+		IdentifiedProteinGroup currentProteinGroup = null;
 		final TObjectIntHashMap<String> psmHeaderPositions = new TObjectIntHashMap<String>();
 		final TObjectIntHashMap<String> proteinHeaderPositions = new TObjectIntHashMap<String>();
 		int numDecoy = 0;
@@ -79,7 +80,7 @@ public class DTASelectParser extends IdentificationsParser<DTASelectProteinGroup
 			InputStream f = null;
 			try {
 				f = fs.get(runId);
-				currentProteinGroup = new DTASelectProteinGroup();
+				currentProteinGroup = new IdentifiedProteinGroup();
 				final BufferedInputStream bis = new BufferedInputStream(f);
 				final BufferedReader dis = new BufferedReader(new InputStreamReader(bis));
 
@@ -201,10 +202,10 @@ public class DTASelectParser extends IdentificationsParser<DTASelectProteinGroup
 						// if comes from a psm line, clear the current group of
 						// proteins
 						if (isPsm) {
-							dtaSelectProteinGroups.add(currentProteinGroup);
+							proteinGroups.add(currentProteinGroup);
 
 							// restart the protein group
-							currentProteinGroup = new DTASelectProteinGroup();
+							currentProteinGroup = new IdentifiedProteinGroup();
 
 						}
 						// if (dbIndex == null) {
@@ -311,7 +312,7 @@ public class DTASelectParser extends IdentificationsParser<DTASelectProteinGroup
 						if (dbIndex == null || psm.getProteins().isEmpty()) {
 							// add the PSM to all the proteins in the current
 							// group and all the proteins to the psm
-							for (final DTASelectProtein prot : currentProteinGroup) {
+							for (final IdentifiedProteinInterface prot : currentProteinGroup) {
 								prot.addPSM(psm);
 								psm.addProtein(prot);
 							}
@@ -324,9 +325,8 @@ public class DTASelectParser extends IdentificationsParser<DTASelectProteinGroup
 
 				}
 				if (dbIndex == null) {
-					dtaSelectProteinGroups.add(currentProteinGroup);
-					log.info(dtaSelectProteinGroups.size() + " proteins groups read in " + fs.size()
-							+ " DTASelect file(s).");
+					proteinGroups.add(currentProteinGroup);
+					log.info(proteinGroups.size() + " proteins groups read in " + fs.size() + " DTASelect file(s).");
 				}
 			} catch (final IOException e) {
 				e.printStackTrace();
@@ -390,45 +390,7 @@ public class DTASelectParser extends IdentificationsParser<DTASelectProteinGroup
 	}
 
 	@Override
-	protected void removeDecoyPSMs() {
-		if (decoyPattern != null) {
-			// in case of decoyPattern is enabled, we may have some PSMs
-			// assigned to
-			// those decoy proteins that have not been saved,
-			// so we need to discard them
-			// We iterate over the psms, and we will remove the ones with no
-			// proteins
-			final Set<String> psmIdsToDelete = new THashSet<String>();
-			for (final String psmID : psmTableByPSMID.keySet()) {
-				if (psmTableByPSMID.get(psmID).getProteins().isEmpty()) {
-					psmIdsToDelete.add(psmID);
-				}
-			}
-			log.info("Removing " + psmIdsToDelete.size() + " PSMs assigned to decoy discarded proteins");
-			for (final String psmID : psmIdsToDelete) {
-				final DTASelectPSM dtaSelectPSM = psmTableByPSMID.get(psmID);
-				if (!dtaSelectPSM.getProteins().isEmpty()) {
-					throw new IllegalArgumentException("This should not happen");
-				}
-				final Set<DTASelectPSM> set = psmTableByFullSequence.get(dtaSelectPSM.getFullSequence());
-				final boolean removed = set.remove(dtaSelectPSM);
-				if (!removed) {
-					throw new IllegalArgumentException("This should not happen");
-				}
-				if (set.isEmpty()) {
-					// remove the entry by full sequence
-					psmTableByFullSequence.remove(dtaSelectPSM.getFullSequence());
-				}
-				// remove psmTableByPsmID
-				psmTableByPSMID.remove(psmID);
-			}
-
-			log.info(psmIdsToDelete.size() + " PSMs discarded as decoy");
-		}
-	}
-
-	@Override
-	protected String getPSMKey(DTASelectPSM psm) {
+	protected String getPSMFullSequence(DTASelectPSM psm) {
 		return psm.getFullSequence();
 	}
 

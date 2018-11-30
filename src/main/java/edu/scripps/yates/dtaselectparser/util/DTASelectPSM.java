@@ -8,12 +8,14 @@ import org.apache.log4j.Logger;
 
 import edu.scripps.yates.dtaselectparser.DTASelectParser;
 import edu.scripps.yates.utilities.fasta.FastaParser;
+import edu.scripps.yates.utilities.parsers.idparser.IdentifiedPSMInterface;
+import edu.scripps.yates.utilities.parsers.idparser.IdentifiedProteinInterface;
 import edu.scripps.yates.utilities.staticstorage.StaticStrings;
 import gnu.trove.map.hash.THashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import gnu.trove.set.hash.THashSet;
 
-public class DTASelectPSM {
+public class DTASelectPSM implements IdentifiedPSMInterface {
 	private static final Logger log = Logger.getLogger(DTASelectParser.class);
 	public static final Map<String, DTASelectPSM> map = new THashMap<String, DTASelectPSM>();
 	public static final String PSM_ID = "FileName";
@@ -49,7 +51,7 @@ public class DTASelectPSM {
 	private final Double pi;
 	private final String fullSequence;
 	private final String scan;
-	private final Set<DTASelectProtein> proteins = new THashSet<DTASelectProtein>();
+	private final Set<IdentifiedProteinInterface> proteins = new THashSet<IdentifiedProteinInterface>();
 	private final String runID;
 	private final String runPath;
 	private String searchEngine;
@@ -111,6 +113,7 @@ public class DTASelectPSM {
 		}
 	}
 
+	@Override
 	public String getRawFileName() {
 		return rawFileName;
 
@@ -232,6 +235,7 @@ public class DTASelectPSM {
 		return pi;
 	}
 
+	@Override
 	public String getFullSequence() {
 		return fullSequence;
 	}
@@ -246,11 +250,13 @@ public class DTASelectPSM {
 	/**
 	 * @return the proteins
 	 */
-	public Set<DTASelectProtein> getProteins() {
+	@Override
+	public Set<IdentifiedProteinInterface> getProteins() {
 		return proteins;
 	}
 
-	public void addProtein(DTASelectProtein protein) {
+	@Override
+	public void addProtein(IdentifiedProteinInterface protein) {
 		proteins.add(protein);
 	}
 
