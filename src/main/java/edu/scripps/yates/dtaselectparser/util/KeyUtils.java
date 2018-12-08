@@ -15,15 +15,15 @@ public class KeyUtils {
 	 */
 	public static String getSpectrumKey(DTASelectPSM psm, boolean chargeSensible) {
 
-		StringBuilder sb = new StringBuilder();
-		if (psm.getRawFileName() != null) {
-			sb.append(psm.getRawFileName());
+		final StringBuilder sb = new StringBuilder();
+		if (psm.getMSRun() != null && psm.getMSRun().getRunId() != null) {
+			sb.append(psm.getMSRun().getRunId());
 		}
 		if (!"".equals(sb.toString())) {
 			sb.append("-");
 		}
-		if (psm.getScan() != null) {
-			sb.append(psm.getScan());
+		if (psm.getScanNumber() != null) {
+			sb.append(psm.getScanNumber());
 		}
 		if (!"".equals(sb.toString())) {
 			sb.append("-");

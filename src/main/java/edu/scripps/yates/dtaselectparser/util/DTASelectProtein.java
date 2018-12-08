@@ -8,15 +8,20 @@ import org.apache.log4j.Logger;
 
 import edu.scripps.yates.utilities.fasta.FastaParser;
 import edu.scripps.yates.utilities.fasta.dbindex.IndexedProtein;
-import edu.scripps.yates.utilities.parsers.idparser.IdentifiedPSMInterface;
-import edu.scripps.yates.utilities.parsers.idparser.IdentifiedProteinGroup;
-import edu.scripps.yates.utilities.parsers.idparser.IdentifiedProteinInterface;
+import edu.scripps.yates.utilities.grouping.GroupableProtein;
+import edu.scripps.yates.utilities.proteomicsmodel.AbstractProtein;
+import edu.scripps.yates.utilities.proteomicsmodel.Accession;
+import edu.scripps.yates.utilities.proteomicsmodel.MSRun;
+import edu.scripps.yates.utilities.proteomicsmodel.PSM;
+import edu.scripps.yates.utilities.proteomicsmodel.Protein;
+import edu.scripps.yates.utilities.proteomicsmodel.enums.AccessionType;
+import edu.scripps.yates.utilities.proteomicsmodel.factories.GeneEx;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import gnu.trove.set.hash.THashSet;
 
-public class DTASelectProtein implements IdentifiedProteinInterface {
+public class DTASelectProtein extends AbstractProtein {
 	private static final Logger log = Logger.getLogger(DTASelectProtein.class);
-	private static final String ID = "Locus";
+	private static final String LOCUS = "Locus";
 	private static final String SP_COUNT = "Spectrum Count";
 	private static final String COVERAGE = "Sequence Coverage";
 	private static final String LENGTH = "Length";
@@ -25,71 +30,60 @@ public class DTASelectProtein implements IdentifiedProteinInterface {
 	private static final String DESCRIPTION = "Descriptive Name";
 	private static final String NSAF = "NSAF";
 	private static final String EMPAI = "EMPAI";
-	private String id;
-	private Integer spcount;
-	private Integer length;
-	private double coverage;
-	private double pi;
-	private String description;
-	private double mw;
-	private final List<IdentifiedPSMInterface> psms = new ArrayList<IdentifiedPSMInterface>();
-	private double nsaf_norm;
-	private Double nsaf;
-	private Double empai;
-	private final List<IdentifiedProteinGroup> proteinGroups = new ArrayList<IdentifiedProteinGroup>();
-	private String searchEngine;
-	private String acc;
+	private String locus;
+
+	// whether to use locus or to parse the locus from input dtaselect file to
+	// get the accession (which may be more time consuming)
 	private final boolean ignoreACCFormat;
 
 	public DTASelectProtein(String lineToParse, TObjectIntHashMap<String> positions, boolean ignoreACCFormat) {
 		// log.info("Creating protein from line: " + lineToParse);
 		this.ignoreACCFormat = ignoreACCFormat;
 		final String[] elements = lineToParse.split("\t");
-		id = elements[positions.get(ID)];
-		spcount = Integer.parseInt(elements[positions.get(SP_COUNT)]);
-		coverage = Double.parseDouble(elements[positions.get(COVERAGE)].replace("%", ""));
+		locus = elements[positions.get(LOCUS)];
 
-		length = Integer.parseInt(elements[positions.get(LENGTH)]);
-		mw = Double.parseDouble(elements[positions.get(MW)]);
-		pi = Double.valueOf(elements[positions.get(PI)]);
-		description = elements[positions.get(DESCRIPTION)];
+		spectrumCount = Integer.parseInt(elements[positions.get(SP_COUNT)]);
+		setCoverage(Double.parseDouble(elements[positions.get(COVERAGE)].replace("%", "")));
 
-		nsaf_norm = Double.valueOf(spcount) / Double.valueOf(length);
+		setLength(Integer.parseInt(elements[positions.get(LENGTH)]));
+		setMw(Double.parseDouble(elements[positions.get(MW)]));
+		setPi(Double.valueOf(elements[positions.get(PI)]));
+		final String description = elements[positions.get(DESCRIPTION)];
+		getPrimaryAccession().setDescription(description);
+		// get gene name from description
+		final String gene = FastaParser.getGeneFromFastaHeader(description);
+		if (gene != null) {
+			addGene(new GeneEx(gene));
+		}
+		setNsaf_norm(Double.valueOf(spectrumCount) / Double.valueOf(length));
 
-		if (positions.containsKey(NSAF))
-			nsaf = Double.valueOf(elements[positions.get(NSAF)]);
-		else
-			nsaf = null;
-		if (positions.containsKey(EMPAI))
-			empai = Double.parseDouble(elements[positions.get(EMPAI)]);
-		else
-			empai = null;
+		if (positions.containsKey(NSAF)) {
+			setNsaf(Double.valueOf(elements[positions.get(NSAF)]));
+		} else {
+			setNsaf(null);
+		}
+		if (positions.containsKey(EMPAI)) {
+			setEmpai(Double.parseDouble(elements[positions.get(EMPAI)]));
+		} else {
+			setEmpai(null);
+		}
 	}
 
 	public DTASelectProtein(IndexedProtein indexedProtein, boolean ignoreACCFormat) {
 		this.ignoreACCFormat = ignoreACCFormat;
-		id = indexedProtein.getAccession();
-
-		description = indexedProtein.getFastaDefLine();
-		spcount = null;
-		coverage = -1;
+		locus = indexedProtein.getAccession();
+		final Accession accession2 = FastaParser.getACC(locus);
+		super.setPrimaryAccession(accession2);
+		final String description = indexedProtein.getFastaDefLine();
+		accession2.setDescription(description);
+		spectrumCount = null;
+		setCoverage(null);
 		length = null;
-		mw = -1;
-		pi = -1;
-		nsaf_norm = -1;
-		nsaf = null;
-		empai = null;
-	}
-
-	/**
-	 * SPC / LENGTH
-	 *
-	 * @return
-	 */
-	public double getRatio() {
-		if (spcount != null && length != null)
-			return spcount / length;
-		return Double.NaN;
+		setMw(null);
+		setPi(null);
+		setNsaf_norm(null);
+		setNsaf(null);
+		setEmpai(null);
 	}
 
 	@Override
@@ -99,7 +93,7 @@ public class DTASelectProtein implements IdentifiedProteinInterface {
 
 	@Override
 	public Integer getSpectrumCount() {
-		return spcount;
+		return spectrumCount;
 	}
 
 	/**
@@ -108,114 +102,31 @@ public class DTASelectProtein implements IdentifiedProteinInterface {
 	 * @return
 	 */
 	public double getEmpaiCov() {
-		return ((Math.pow(10, coverage / 100)) - 1);
+		return ((Math.pow(10, getCoverage() / 100)) - 1);
 	}
 
-	/**
-	 * Gets the empai number as reported in the DTASelect
-	 *
-	 * @return
-	 */
-	@Override
-	public Double getEmpai() {
-		return empai;
-	}
-
-	@Override
-	public double getCoverage() {
-		return coverage;
-	}
-
-	@Override
-	public List<IdentifiedPSMInterface> getPSMs() {
-		return psms;
-	}
-
-	public void addPSM(IdentifiedPSMInterface psm) {
-		psms.add(psm);
-
-	}
-
-	/**
-	 * @return the id
-	 */
-	@Override
 	public String getLocus() {
-		return id;
+		return locus;
 	}
 
 	public void setLocus(String locus) {
-		id = locus;
+		this.locus = locus;
 		// set acc to null, since it is a value derived from id
-		acc = null;
-	}
-
-	/**
-	 * @return the pi
-	 */
-	@Override
-	public double getPi() {
-		return pi;
-	}
-
-	/**
-	 * @return the description
-	 */
-	@Override
-	public String getDescription() {
-		return description;
-	}
-
-	/**
-	 * @return the mw
-	 */
-	@Override
-	public Double getMw() {
-		return mw;
-	}
-
-	/**
-	 * @return the nsaf_norm
-	 */
-	@Override
-	public Double getNsaf_norm() {
-		return nsaf_norm;
-	}
-
-	/**
-	 * @return the nsaf
-	 */
-	@Override
-	public Double getNsaf() {
-		return nsaf;
-	}
-
-	@Override
-	public void addProteinGroup(IdentifiedProteinGroup proteinGroup) {
-		proteinGroups.add(proteinGroup);
-
-	}
-
-	/**
-	 * @return the proteinGroup
-	 */
-	@Override
-	public List<IdentifiedProteinGroup> getProteinGroups() {
-		return proteinGroups;
+		setPrimaryAccession(null);
 	}
 
 	/**
 	 *
 	 * @return
 	 */
-	public List<IdentifiedProteinInterface> getSibilingProteinsInGroup() {
-		final List<IdentifiedProteinInterface> ret = new ArrayList<IdentifiedProteinInterface>();
-		for (final IdentifiedProteinGroup dtaSelectProteinGroup : proteinGroups) {
-			for (final IdentifiedProteinInterface dtaSelectProtein : dtaSelectProteinGroup) {
-				if (!dtaSelectProtein.getLocus().equals(getLocus()))
-					ret.add(dtaSelectProtein);
-			}
+	public List<Protein> getSibilingProteinsInGroup() {
+		final List<Protein> ret = new ArrayList<Protein>();
+
+		for (final GroupableProtein protein : getProteinGroup()) {
+			if (protein != this && !protein.getAccession().equals(getAccession()))
+				ret.add((Protein) protein);
 		}
+
 		// if (!ret.isEmpty())
 		// log.info("Protein with " + ret.size() + " other proteins in "
 		// + proteinGroups.size() + " groups");
@@ -232,71 +143,24 @@ public class DTASelectProtein implements IdentifiedProteinInterface {
 		return getLocus();
 	}
 
-	public void setSearchEngine(String searchEngine) {
-		this.searchEngine = searchEngine;
-	}
-
-	/**
-	 * @return the searchEngine
-	 */
 	@Override
-	public String getSearchEngine() {
-		return searchEngine;
-	}
+	public void mergeWithProtein(Protein protein) {
 
-	@Override
-	public void mergeWithProtein(IdentifiedProteinInterface protein) {
-
-		if (coverage == -1.0) {
-			coverage = protein.getCoverage();
-		}
-		description = protein.getDescription();
-		if (protein.getEmpai() != null) {
-			empai = protein.getEmpai();
-		}
-		if (protein.getLength() != null) {
-			length = protein.getLength();
-		}
-		if (protein.getLocus() != null) {
-			id = protein.getLocus();
-		}
-		if (mw == -1.0) {
-			mw = protein.getMw();
-		}
-		if (protein.getNsaf() != null) {
-			nsaf = protein.getNsaf();
-		}
-		if (nsaf_norm == -1.0) {
-			nsaf_norm = protein.getNsaf_norm();
-		}
-		if (pi == -1.0) {
-			pi = protein.getPi();
-		}
-		if (!protein.getProteinGroups().isEmpty()) {
-			proteinGroups.addAll(protein.getProteinGroups());
-		}
-		if (!protein.getPSMs().isEmpty()) {
-			for (final IdentifiedPSMInterface psm : protein.getPSMs()) {
-				addPSM(psm);
-				psm.getProteins().remove(protein);
-				psm.getProteins().add(this);
+		super.mergeWithProtein(protein);
+		if (protein instanceof DTASelectProtein) {
+			if (((DTASelectProtein) protein).getLocus() != null) {
+				setLocus(((DTASelectProtein) protein).getLocus());
 			}
+		}
 
-		}
-		if (spcount == null) {
-			spcount = protein.getSpectrumCount();
-		}
-		if (searchEngine == null) {
-			searchEngine = protein.getSearchEngine();
-		}
 	}
 
 	public Set<String> getPeptideSequences() {
 		final Set<String> peptideSequences = new THashSet<String>();
-		final List<IdentifiedPSMInterface> psMs2 = getPSMs();
-		for (final IdentifiedPSMInterface psm : psMs2) {
+		final List<PSM> psMs2 = getPSMs();
+		for (final PSM psm : psMs2) {
 			final DTASelectPSM dtaSelectPSM = (DTASelectPSM) psm;
-			peptideSequences.add(dtaSelectPSM.getSequence().getSequence());
+			peptideSequences.add(dtaSelectPSM.getSequence());
 		}
 		return peptideSequences;
 	}
@@ -307,14 +171,39 @@ public class DTASelectProtein implements IdentifiedProteinInterface {
 	 * @return
 	 */
 	@Override
-	public String getAccession() {
-		if (acc == null) {
+	public Accession getPrimaryAccession() {
+		if (super.getPrimaryAccession() == null) {
 			if (ignoreACCFormat) {
-				acc = getLocus();
+				setPrimaryAccession(AccessionType.UNIPROT, getLocus());
 			} else {
-				acc = FastaParser.getACC(getLocus()).getFirstelement();
+				setPrimaryAccession(FastaParser.getACC(getLocus()));
 			}
 		}
-		return acc;
+		return super.getPrimaryAccession();
 	}
+
+	@Override
+	public Set<MSRun> getMSRuns() {
+		if (super.getMSRuns() == null || super.getMSRuns().isEmpty()) {
+			// get msruns from psms
+			if (getPSMs() != null) {
+				for (final PSM psm : getPSMs()) {
+					addMSRun(psm.getMSRun());
+				}
+			}
+			// getPSMs().stream().forEach(psm -> addMSRun(psm.getMSRun()));
+		}
+		return super.getMSRuns();
+	}
+
+	@Override
+	public boolean addPSM(PSM psm, boolean recursively) {
+		// clear msRuns because msRuns will come from the psms if the set of
+		// msruns is empty
+		if (getMSRuns() != null) {
+			getMSRuns().clear();
+		}
+		return super.addPSM(psm, recursively);
+	}
+
 }
