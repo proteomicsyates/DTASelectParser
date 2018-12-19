@@ -21,7 +21,7 @@ import gnu.trove.set.hash.THashSet;
 
 public class DTASelectProtein extends AbstractProtein {
 	private static final Logger log = Logger.getLogger(DTASelectProtein.class);
-	private static final String LOCUS = "Locus";
+	public static final String LOCUS = "Locus";
 	private static final String SP_COUNT = "Spectrum Count";
 	private static final String COVERAGE = "Sequence Coverage";
 	private static final String LENGTH = "Length";
@@ -43,11 +43,11 @@ public class DTASelectProtein extends AbstractProtein {
 		locus = elements[positions.get(LOCUS)];
 
 		spectrumCount = Integer.parseInt(elements[positions.get(SP_COUNT)]);
-		setCoverage(Double.parseDouble(elements[positions.get(COVERAGE)].replace("%", "")));
+		setCoverage(Float.parseFloat(elements[positions.get(COVERAGE)].replace("%", "")));
 
 		setLength(Integer.parseInt(elements[positions.get(LENGTH)]));
-		setMw(Double.parseDouble(elements[positions.get(MW)]));
-		setPi(Double.valueOf(elements[positions.get(PI)]));
+		setMw(Float.parseFloat(elements[positions.get(MW)]));
+		setPi(Float.parseFloat(elements[positions.get(PI)]));
 		final String description = elements[positions.get(DESCRIPTION)];
 		getPrimaryAccession().setDescription(description);
 		// get gene name from description
@@ -55,15 +55,15 @@ public class DTASelectProtein extends AbstractProtein {
 		if (gene != null) {
 			addGene(new GeneEx(gene));
 		}
-		setNsaf_norm(Double.valueOf(spectrumCount) / Double.valueOf(length));
+		setNsaf_norm(Float.valueOf(spectrumCount) / Float.valueOf(length));
 
 		if (positions.containsKey(NSAF)) {
-			setNsaf(Double.valueOf(elements[positions.get(NSAF)]));
+			setNsaf(Float.valueOf(elements[positions.get(NSAF)]));
 		} else {
 			setNsaf(null);
 		}
 		if (positions.containsKey(EMPAI)) {
-			setEmpai(Double.parseDouble(elements[positions.get(EMPAI)]));
+			setEmpai(Float.parseFloat(elements[positions.get(EMPAI)]));
 		} else {
 			setEmpai(null);
 		}
@@ -112,7 +112,8 @@ public class DTASelectProtein extends AbstractProtein {
 	public void setLocus(String locus) {
 		this.locus = locus;
 		// set acc to null, since it is a value derived from id
-		setPrimaryAccession(null);
+		final Accession acc = null;
+		this.setPrimaryAccession(acc);
 	}
 
 	/**
@@ -198,11 +199,6 @@ public class DTASelectProtein extends AbstractProtein {
 
 	@Override
 	public boolean addPSM(PSM psm, boolean recursively) {
-		// clear msRuns because msRuns will come from the psms if the set of
-		// msruns is empty
-		if (getMSRuns() != null) {
-			getMSRuns().clear();
-		}
 		return super.addPSM(psm, recursively);
 	}
 

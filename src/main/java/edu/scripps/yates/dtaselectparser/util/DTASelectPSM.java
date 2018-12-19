@@ -39,9 +39,9 @@ public class DTASelectPSM extends AbstractPSM {
 	private static final String REDUNDANCY = "Redundancy";
 	public static final String SEQUENCE = "Sequence";
 
-	private final Double prob;
-	private final Double conf;
-	private final Double prob_score;
+	private final Float prob;
+	private final Float conf;
+	private final Float prob_score;
 	private final Integer redundancy;
 	private final PeptideSequence peptideSequence;
 	private final String rawFileName;
@@ -68,37 +68,37 @@ public class DTASelectPSM extends AbstractPSM {
 		// store by scan number in the map
 		map.put(getScanNumber(), this);
 
-		setXCorr(Double.parseDouble(elements[positions.get(XCORR)]));
-		setDeltaCn(Double.parseDouble(elements[positions.get(DELTACN)]));
-		conf = Double.parseDouble(elements[positions.get(CONF)]);
-		setExperimentalMH(Double.parseDouble(elements[positions.get(MH)]));
-		setCalcMH(Double.parseDouble(elements[positions.get(CALC_MH)]));
-		super.setTotalIntensity(Double.valueOf(elements[positions.get(TOTAL_INTENSITY)]));
+		setXCorr(Float.parseFloat(elements[positions.get(XCORR)]));
+		setDeltaCn(Float.parseFloat(elements[positions.get(DELTACN)]));
+		conf = Float.parseFloat(elements[positions.get(CONF)]);
+		setExperimentalMH(Float.parseFloat(elements[positions.get(MH)]));
+		setCalcMH(Float.parseFloat(elements[positions.get(CALC_MH)]));
+		super.setTotalIntensity(Float.valueOf(elements[positions.get(TOTAL_INTENSITY)]));
 		setSpr(Integer.valueOf(elements[positions.get(SPR)]));
 
-		setIonProportion(Double.parseDouble(elements[positions.get(ION_PROPORTION)]));
+		setIonProportion(Float.parseFloat(elements[positions.get(ION_PROPORTION)]));
 		redundancy = Integer.valueOf(elements[positions.get(REDUNDANCY)]);
-		peptideSequence = new PeptideSequence(StaticStrings.getUniqueInstance(elements[positions.get(SEQUENCE)]));
+		peptideSequence = new PeptideSequence(StaticStrings.getUniqueInstance(elements[positions.get(SEQUENCE)]), true);
 
 		if (positions.containsKey(PROB)) {
-			prob = Double.valueOf(elements[positions.get(PROB)]);
+			prob = Float.valueOf(elements[positions.get(PROB)]);
 		} else {
 			prob = null;
 		}
 		if (positions.containsKey(PPM)) {
-			setMassErrorPPM(Double.parseDouble(elements[positions.get(PPM)]));
+			setMassErrorPPM(Float.parseFloat(elements[positions.get(PPM)]));
 		}
 		if (positions.containsKey(PI)) {
-			setPi(Double.parseDouble(elements[positions.get(PI)]));
+			setPi(Float.parseFloat(elements[positions.get(PI)]));
 		}
 		if (positions.containsKey(PROB_SCORE)) {
-			prob_score = Double.parseDouble(elements[positions.get(PROB_SCORE)]);
+			prob_score = Float.parseFloat(elements[positions.get(PROB_SCORE)]);
 		} else {
 			prob_score = null;
 		}
 
 		if (positions.containsKey(RT)) {
-			setRtInMinutes(Double.parseDouble(elements[positions.get(RT)]));
+			setRtInMinutes(Float.parseFloat(elements[positions.get(RT)]));
 		}
 		setIdentifier(KeyUtils.getSpectrumKey(this, true));
 	}
@@ -106,21 +106,21 @@ public class DTASelectPSM extends AbstractPSM {
 	/**
 	 * @return the prob
 	 */
-	public Double getProb() {
+	public Float getProb() {
 		return prob;
 	}
 
 	/**
 	 * @return the conf
 	 */
-	public Double getConf() {
+	public Float getConf() {
 		return conf;
 	}
 
 	/**
 	 * @return the prob_score
 	 */
-	public Double getProb_score() {
+	public Float getProb_score() {
 		return prob_score;
 	}
 
@@ -138,7 +138,7 @@ public class DTASelectPSM extends AbstractPSM {
 
 	@Override
 	public String getFullSequence() {
-		return peptideSequence.getRawSequence();
+		return peptideSequence.getFullSequence();
 	}
 
 	@Override
