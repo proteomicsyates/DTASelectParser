@@ -87,12 +87,12 @@ public class DTASelectParser extends IdentificationsParser {
 			if (onlyReadProteins) {
 				uniqueMSRun = new MSRunEx(analysisID, null);
 			}
-			InputStream f = null;
+			BufferedReader dis = null;
 			try {
-				f = fs.get(analysisID);
+				final InputStream f = fs.get(analysisID);
 				currentProteinGroup = new ProteinGroup();
 				final BufferedInputStream bis = new BufferedInputStream(f);
-				final BufferedReader dis = new BufferedReader(new InputStreamReader(bis));
+				dis = new BufferedReader(new InputStreamReader(bis));
 
 				String line;
 				int numLine = 0;
@@ -266,10 +266,6 @@ public class DTASelectParser extends IdentificationsParser {
 						if (super.containsPSMByPSMID(psm.getIdentifier())) {
 							psm = super.getPSMByPSMID(psm.getIdentifier());
 						}
-						if (psm.getIdentifier().equals(
-								"Xi20180215_01_cNE_Uw1_0214LT_03_30C-42571-LLPPNSSSSSFSYQFSDLDSAAVDSDMYDLPK-4")) {
-							log.info("asdf");
-						}
 						addPSMToMaps(psm);
 						if (!searchEngines.isEmpty()) {
 							psm.setSearchEngine(searchEngines.iterator().next());
@@ -356,9 +352,9 @@ public class DTASelectParser extends IdentificationsParser {
 			} finally {
 				log.info(numDecoy + " proteins discarded as decoy.");
 				try {
-					if (f != null) {
+					if (dis != null) {
 						log.info("Closing input stream");
-						f.close();
+						dis.close();
 						log.info("Input stream closed");
 
 					}

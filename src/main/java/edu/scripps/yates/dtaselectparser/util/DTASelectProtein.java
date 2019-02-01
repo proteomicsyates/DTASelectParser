@@ -42,7 +42,7 @@ public class DTASelectProtein extends AbstractProtein {
 		final String[] elements = lineToParse.split("\t");
 		locus = elements[positions.get(LOCUS)];
 
-		spectrumCount = Integer.parseInt(elements[positions.get(SP_COUNT)]);
+		setSpectrumCount(Integer.parseInt(elements[positions.get(SP_COUNT)]));
 		setCoverage(Float.parseFloat(elements[positions.get(COVERAGE)].replace("%", "")));
 
 		setLength(Integer.parseInt(elements[positions.get(LENGTH)]));
@@ -55,8 +55,9 @@ public class DTASelectProtein extends AbstractProtein {
 		if (gene != null) {
 			addGene(new GeneEx(gene));
 		}
-		setNsaf_norm(Float.valueOf(spectrumCount) / Float.valueOf(length));
-
+		if (getSpectrumCount() != null && getLength() != null) {
+			setNsaf_norm(Float.valueOf(getSpectrumCount()) / Float.valueOf(getLength()));
+		}
 		if (positions.containsKey(NSAF)) {
 			setNsaf(Float.valueOf(elements[positions.get(NSAF)]));
 		} else {
@@ -76,24 +77,14 @@ public class DTASelectProtein extends AbstractProtein {
 		super.setPrimaryAccession(accession2);
 		final String description = indexedProtein.getFastaDefLine();
 		accession2.setDescription(description);
-		spectrumCount = null;
+		setSpectrumCount(null);
 		setCoverage(null);
-		length = null;
+		setLength(null);
 		setMw(null);
 		setPi(null);
 		setNsaf_norm(null);
 		setNsaf(null);
 		setEmpai(null);
-	}
-
-	@Override
-	public Integer getLength() {
-		return length;
-	}
-
-	@Override
-	public Integer getSpectrumCount() {
-		return spectrumCount;
 	}
 
 	/**
