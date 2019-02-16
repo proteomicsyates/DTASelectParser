@@ -29,8 +29,12 @@ import edu.scripps.yates.utilities.grouping.ProteinGroup;
 import edu.scripps.yates.utilities.parsers.idparser.IdentificationsParser;
 import edu.scripps.yates.utilities.proteomicsmodel.MSRun;
 import edu.scripps.yates.utilities.proteomicsmodel.PSM;
+import edu.scripps.yates.utilities.proteomicsmodel.Peptide;
 import edu.scripps.yates.utilities.proteomicsmodel.Protein;
 import edu.scripps.yates.utilities.proteomicsmodel.factories.MSRunEx;
+import edu.scripps.yates.utilities.proteomicsmodel.factories.PeptideEx;
+import edu.scripps.yates.utilities.proteomicsmodel.staticstorage.StaticProteomicsModelStorage;
+import edu.scripps.yates.utilities.proteomicsmodel.utils.KeyUtils;
 import edu.scripps.yates.utilities.remote.RemoteSSHFileReference;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import gnu.trove.set.hash.THashSet;
@@ -282,6 +286,19 @@ public class DTASelectParser extends IdentificationsParser {
 							log.debug(spectraFileFullPath + " added to a set of " + spectraFileFullPaths.size()
 									+ " spectra paths in total");
 						}
+						// create the peptide
+						Peptide peptide = null;
+						final String peptideKey = KeyUtils.getInstance().getSequenceKey(psm, true);
+						if (StaticProteomicsModelStorage.containsPeptide(psm.getMSRun(), null, peptideKey)) {
+							peptide = StaticProteomicsModelStorage.getSinglePeptide(psm.getMSRun(), null, peptideKey);
+						} else {
+							peptide = new PeptideEx(psm.getFullSequence());
+							StaticProteomicsModelStorage.addPeptide(peptide, psm.getMSRun(), null);
+							peptide.setSearchEngine(psm.getSearchEngine());
+							peptide.addMSRun(psm.getMSRun());
+						}
+
+						psm.setPeptide(peptide, true);
 
 						if (dbIndex != null) {
 							final Set<IndexedProtein> indexedProteins = dbIndex.getProteins(psm.getSequence());
