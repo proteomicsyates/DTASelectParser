@@ -101,6 +101,7 @@ public class DTASelectPSM extends AbstractPSM {
 			setRtInMinutes(Float.parseFloat(elements[positions.get(RT)]));
 		}
 		setIdentifier(KeyUtils.getSpectrumKey(this, true));
+		setKey(getIdentifier());
 	}
 
 	/**

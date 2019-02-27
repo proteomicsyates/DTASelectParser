@@ -41,7 +41,7 @@ public class DTASelectProtein extends AbstractProtein {
 		this.ignoreACCFormat = ignoreACCFormat;
 		final String[] elements = lineToParse.split("\t");
 		locus = elements[positions.get(LOCUS)];
-
+		setKey(getAccession());
 		setSpectrumCount(Integer.parseInt(elements[positions.get(SP_COUNT)]));
 		setCoverage(Float.parseFloat(elements[positions.get(COVERAGE)].replace("%", "")));
 
@@ -73,8 +73,10 @@ public class DTASelectProtein extends AbstractProtein {
 	public DTASelectProtein(IndexedProtein indexedProtein, boolean ignoreACCFormat) {
 		this.ignoreACCFormat = ignoreACCFormat;
 		locus = indexedProtein.getAccession();
+
 		final Accession accession2 = FastaParser.getACC(locus);
 		super.setPrimaryAccession(accession2);
+		setKey(getAccession());
 		final String description = indexedProtein.getFastaDefLine();
 		accession2.setDescription(description);
 		setSpectrumCount(null);
