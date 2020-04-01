@@ -266,7 +266,8 @@ public class DTASelectParser extends IdentificationsParser {
 							continue;
 						}
 
-						PSM psm = new DTASelectPSM(line, psmHeaderPositions, runPath);
+						PSM psm = new DTASelectPSM(line, psmHeaderPositions, runPath, isDistinguishModifiedSequences(),
+								isChargeSensible());
 						if (super.containsPSMByPSMID(psm.getIdentifier())) {
 							psm = super.getPSMByPSMID(psm.getIdentifier());
 						}
@@ -288,7 +289,8 @@ public class DTASelectParser extends IdentificationsParser {
 						}
 						// create the peptide
 						Peptide peptide = null;
-						final String peptideKey = KeyUtils.getInstance().getSequenceKey(psm, true);
+						final String peptideKey = KeyUtils.getInstance().getSequenceChargeKey(psm,
+								isDistinguishModifiedSequences(), isChargeSensible());
 						if (StaticProteomicsModelStorage.containsPeptide(psm.getMSRun(), null, peptideKey)) {
 							peptide = StaticProteomicsModelStorage.getSinglePeptide(psm.getMSRun(), null, peptideKey);
 						} else {

@@ -15,6 +15,7 @@ import edu.scripps.yates.utilities.proteomicsmodel.Score;
 import edu.scripps.yates.utilities.proteomicsmodel.factories.MSRunEx;
 import edu.scripps.yates.utilities.proteomicsmodel.factories.ScoreEx;
 import edu.scripps.yates.utilities.proteomicsmodel.staticstorage.StaticProteomicsModelStorage;
+import edu.scripps.yates.utilities.proteomicsmodel.utils.KeyUtils;
 import edu.scripps.yates.utilities.staticstorage.StaticStrings;
 import gnu.trove.map.hash.THashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
@@ -47,9 +48,10 @@ public class DTASelectPSM extends AbstractPSM {
 	private final String rawFileName;
 	private final static String scoreType = "PSM-level identification statistic";
 
-	public DTASelectPSM(String dtaSelectRow, TObjectIntHashMap<String> positions, String runPath) {
+	public DTASelectPSM(String dtaSelectRow, TObjectIntHashMap<String> positions, String runPath,
+			boolean distinguishModifiedSequence, boolean chargeStateSensible) {
 		// log.info("Creating PSM from line: " + dtaSelectRow);
-
+		super(distinguishModifiedSequence, chargeStateSensible);
 		// parse the headerRow
 		final String[] elements = dtaSelectRow.split("\t");
 		final String rawPSMIdentifier = elements[positions.get(PSM_ID)];
@@ -100,7 +102,8 @@ public class DTASelectPSM extends AbstractPSM {
 		if (positions.containsKey(RT)) {
 			setRtInMinutes(Float.parseFloat(elements[positions.get(RT)]));
 		}
-		setIdentifier(KeyUtils.getSpectrumKey(this, true));
+		setIdentifier(
+				KeyUtils.getInstance().getSpectrumKey(this, isDistinguishModifiedSequence(), isChargeStateSensible()));
 		setKey(getIdentifier());
 	}
 
