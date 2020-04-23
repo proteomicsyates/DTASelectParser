@@ -291,11 +291,16 @@ public class DTASelectParser extends IdentificationsParser {
 						Peptide peptide = null;
 						final String peptideKey = KeyUtils.getInstance().getSequenceChargeKey(psm,
 								isDistinguishModifiedSequences(), isChargeSensible());
-						if (StaticProteomicsModelStorage.containsPeptide(psm.getMSRun(), null, peptideKey)) {
-							peptide = StaticProteomicsModelStorage.getSinglePeptide(psm.getMSRun(), null, peptideKey);
+//psm.getMSRun()
+						MSRun run = null;
+						if (isSeparatePeptidesByMSRun()) {
+							run = psm.getMSRun();
+						}
+						if (StaticProteomicsModelStorage.containsPeptide(run, null, peptideKey)) {
+							peptide = StaticProteomicsModelStorage.getSinglePeptide(run, null, peptideKey);
 						} else {
-							peptide = new PeptideEx(psm.getFullSequence());
-							StaticProteomicsModelStorage.addPeptide(peptide, psm.getMSRun(), null);
+							peptide = new PeptideEx(psm.getFullSequence(), peptideKey);
+							StaticProteomicsModelStorage.addPeptide(peptide, run, null, peptideKey);
 							peptide.setSearchEngine(psm.getSearchEngine());
 							peptide.addMSRun(psm.getMSRun());
 						}
