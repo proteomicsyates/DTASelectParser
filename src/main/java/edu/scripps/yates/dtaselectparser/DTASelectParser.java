@@ -123,11 +123,13 @@ public class DTASelectParser extends IdentificationsParser {
 					if (numLine == 3) {
 						fastaPath = line.trim();
 					}
-					if (line.toLowerCase().startsWith(SEQUEST.toLowerCase())) {
+					if (line.length() >= SEQUEST.length()
+							&& SEQUEST.equalsIgnoreCase(line.substring(0, SEQUEST.length()))) {
 						searchEngineLine = numLine;
 						searchEngines.add(SEQUEST);
 						setSearchEngineVersion(line.split(" ")[1]);
-					} else if (line.toLowerCase().startsWith(PROLUCID.toLowerCase())) {
+					} else if (line.length() >= PROLUCID.length()
+							&& PROLUCID.equalsIgnoreCase(line.substring(0, PROLUCID.length()))) {
 						searchEngineLine = numLine;
 						searchEngines.add(PROLUCID);
 						setSearchEngineVersion(line.split(" ")[1]);
