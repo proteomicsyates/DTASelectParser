@@ -131,7 +131,7 @@ public class DTASelectParser extends IdentificationsParser {
 						searchEngineLine = numLine;
 						searchEngines.add(PROLUCID);
 						setSearchEngineVersion(line.split(" ")[1]);
-					} else if (line.toLowerCase().startsWith("?")) {
+					} else if (line.startsWith("?")) {
 						searchEngineLine = numLine;
 						// searchEngines.add(UNKNOWN);
 						// if not known, report as SEQUEST as it is the most
