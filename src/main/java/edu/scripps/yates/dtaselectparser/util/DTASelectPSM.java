@@ -39,13 +39,18 @@ public class DTASelectPSM extends AbstractPSM {
 	private static final String ION_PROPORTION = "IonProportion";
 	private static final String REDUNDANCY = "Redundancy";
 	public static final String SEQUENCE = "Sequence";
-
+	public static final String XIC = "XIC";
+	public static final String ESTIMATED_XIC = "Estimated_XIC";
+	public static final String CCS = "CCS";
 	private final Float prob;
 	private final Float conf;
 	private final Float prob_score;
 	private final Integer redundancy;
 	private final PeptideSequence peptideSequence;
 	private final String rawFileName;
+	private Float xic;
+	private Float estimatedXIC;
+	private Float ccs;
 	private final static String scoreType = "PSM-level identification statistic";
 
 	public DTASelectPSM(String dtaSelectRow, TObjectIntHashMap<String> positions, String runPath,
@@ -102,6 +107,23 @@ public class DTASelectPSM extends AbstractPSM {
 		if (positions.containsKey(RT)) {
 			setRtInMinutes(Float.parseFloat(elements[positions.get(RT)]));
 		}
+		// XIC added on Dec2020
+		if (positions.containsKey(XIC)) {
+			xic = Float.parseFloat(elements[positions.get(XIC)]);
+		} else {
+			xic = null;
+		}
+		if (positions.containsKey(ESTIMATED_XIC)) {
+			estimatedXIC = Float.parseFloat(elements[positions.get(ESTIMATED_XIC)]);
+		} else {
+			estimatedXIC = null;
+		}
+		if (positions.containsKey(CCS)) {
+			ccs = Float.parseFloat(elements[positions.get(CCS)]);
+		} else {
+			ccs = null;
+		}
+
 		setIdentifier(
 				KeyUtils.getInstance().getSpectrumKey(this, isDistinguishModifiedSequence(), isChargeStateSensible()));
 		setKey(getIdentifier());
@@ -166,6 +188,18 @@ public class DTASelectPSM extends AbstractPSM {
 			// add xcorr and deltacn
 			addScore(new ScoreEx(String.valueOf(getXCorr()), "XCorr", scoreType, "XCorr"));
 			addScore(new ScoreEx(String.valueOf(getDeltaCn()), "DeltaCN", scoreType, "DeltaCN"));
+			// add CCS and XIC and Estimated_XIC as scores
+			if (xic != null) {
+				addScore(new ScoreEx(String.valueOf(xic), XIC, "quantification datatype",
+						"Area of the extracted ion chromatogram"));
+			}
+			if (estimatedXIC != null) {
+				addScore(new ScoreEx(String.valueOf(estimatedXIC), ESTIMATED_XIC, "quantification datatype",
+						"Estimated area of the extracted ion chromatogram"));
+			}
+			if (ccs != null) {
+				addScore(new ScoreEx(String.valueOf(ccs), CCS, "collisional cross sectional area", ""));
+			}
 		}
 		return super.getScores();
 	}

@@ -306,9 +306,8 @@ public class DTASelectParser extends IdentificationsParser {
 							peptide.setSearchEngine(psm.getSearchEngine());
 							peptide.addMSRun(psm.getMSRun());
 						}
-
 						psm.setPeptide(peptide, true);
-
+						addPeptide(peptide);
 						if (dbIndex != null) {
 							final Set<IndexedProtein> indexedProteins = dbIndex.getProteins(psm.getSequence());
 							if (indexedProteins.isEmpty()) {
@@ -344,6 +343,7 @@ public class DTASelectParser extends IdentificationsParser {
 									// add the psm to the protein and
 									// vice-versa
 									psm.addProtein(protein, true);
+									peptide.addProtein(protein, true);
 								}
 							}
 						}
@@ -353,6 +353,7 @@ public class DTASelectParser extends IdentificationsParser {
 							// group and all the proteins to the psm
 							for (final GroupableProtein prot : currentProteinGroup) {
 								((Protein) prot).addPSM(psm, true);
+								((Protein) prot).addPeptide(peptide, true);
 							}
 						}
 						if (checkFormat) {
@@ -379,9 +380,9 @@ public class DTASelectParser extends IdentificationsParser {
 				log.info(numDecoy + " proteins discarded as decoy.");
 				try {
 					if (dis != null) {
-						log.info("Closing input stream");
+						log.debug("Closing input stream");
 						dis.close();
-						log.info("Input stream closed");
+						log.debug("Input stream closed");
 
 					}
 				} catch (final IOException e) {
