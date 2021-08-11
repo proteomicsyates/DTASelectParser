@@ -10,7 +10,7 @@ Alternatively, you can get it from our **maven repository**:
 <dependency>  
   <groupId>edu.scripps.yates</groupId>  
   <artifactId>dtaselectparser</artifactId>  
-  <version>1.1</version>  
+  <version>1.1.2-SNAPSHOT</version>  
 </dependency>  
 ```  
   
